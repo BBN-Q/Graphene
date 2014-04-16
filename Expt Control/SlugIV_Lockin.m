@@ -57,12 +57,12 @@ for j=1:iTotalDataPts
     RList(j) = Lockin.X()*1e9/ExcitCurrentList(j); dRList(j) = Lockin.Y()*1e9/ExcitCurrentList(j);
     fprintf(FilePtr,'%e\t%e\t%e\r\n',ExcitCurrentList(j), RList(j), dRList(j));
 end
+VList = ExcitCurrentList.*RList; dVList = ExcitCurrentList.*dRList;
 Lockin.sineAmp = ExcitVoltageList(1);
         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%       PLOT AND SAVE DATA     %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-figure; errorbar(ExcitCurrentList, RList, dRList); grid on;
 % pause off ;
 
 Lockin.disconnect();

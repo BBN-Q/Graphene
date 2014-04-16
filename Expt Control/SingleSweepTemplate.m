@@ -10,17 +10,17 @@ if ~isempty(temp)
     fclose(temp)
     delete(temp)
 end
-clear temp sigGen spec
-%close all
-%fclose all;
+% clear temp sigGen spec
+% close all
+% fclose all;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%     INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-base_path = 'C:\Qlab software\experiments\Graphene\';
+base_path = 'C:\Documents and Settings\qlab\My Documents\data\Graphene\';
 cd(base_path)
-addpath([ base_path,'data'],'-END');
+% addpath([ base_path,'data'],'-END');
 filename = '20140327_mixer_2f_power.txt';
 data = fopen(filename,'w');
 pause on;

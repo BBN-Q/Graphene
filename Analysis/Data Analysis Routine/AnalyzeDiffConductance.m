@@ -1,0 +1,82 @@
+% Analyzing Differential Thermal Conductance
+Vgate = 4 + 0.2;
+
+HFitPts = 5;
+HDisplayPts = 3*HFitPts;
+
+% Reading out Current and dV/dI from HotElectron Data Files
+GenerateHotElectronDataFileList
+[Rsd_kOhm, IsdMatrix, TMatrix] = ReadHotElectronDataFile(DataFileList, ParametersList, Vgate);
+[iTPts, n] = size(TMatrix);
+for k=1:iTPts
+    T_K(k) = mean(TMatrix(k,:));
+end
+clear n;
+
+% Reading out the Noise Spectrums
+GenerateNoiseSpectrumDataFileList
+for k=1:iTPts
+    iTotal = 0;
+    for j=1:length(ParametersList)
+        if (abs(ParametersList(j,3)-T_K(k))<0.1)
+            iTotal = iTotal+1;
+            SubParametersList(iTotal,:) = ParametersList(j,:);
+            SubDataFileList(iTotal,:) = DataFileList(j,:);
+        end
+    end
+    % All Noise Spectrums at one temperature prepared!
+    [dummy1, Freq_GHz, NoisePow_W(k,:)] = AnalyzeSpectrums(SubDataFileList, SubParametersList, Vgate, 1.165e9, 100e6, 0);
+end
+clear dummy1 iTotal;
+
+% Fitting noise data around zero current for Johnson noise and Fit for
+% Calibration Curve
+for k=1:iTPts
+    [JohnsonNoise(k), IsdNull(k)] = Fit4Extremum(IsdMatrix(k,:)', NoisePow_W(k,:)', 0, 10, 1)
+    title(T_K(k));
+end
+figure; plot(T_K, JohnsonNoise,'d');
+[JohnsonFit, gof] = fit(T_K', JohnsonNoise', 'poly1');
+hold on; plot(JohnsonFit); grid on;
+xlabel('Temperature [K]'); ylabel('Johnson Noise [W]'); title('Johnson Noise');
+ElectronT = (NoisePow_W-JohnsonFit.p2)/JohnsonFit.p1;
+
+% Calculating the R by V/I
+for j=1:iTPts
+    dV = 1e-6*mean(diff(IsdMatrix(j,:))).*Rsd_kOhm(j,:);
+    HalfLengthdV = length(dV)*0.5-0.5;
+    for k=1:HalfLengthdV
+        Vsd(j, k) = -sum(dV(k:HalfLengthdV));
+    end
+    Vsd(j, HalfLengthdV+1) = 0;
+    for k=(HalfLengthdV+2):length(dV)
+        Vsd(j, k) = sum(dV(HalfLengthdV+2:k));
+    end
+    R_kOhm(j,:) = 1e6*Vsd(j,:)./IsdMatrix(j,:);
+    R_kOhm(j, HalfLengthdV+1) = 0.5*(R_kOhm(j, HalfLengthdV) + R_kOhm(j, HalfLengthdV+2));
+    %figure; plot(IsdMatrix(j,:), Vsd(j,:), '.-'); ylabel('V_{sd} [V]'); title(T_K(j));
+    %figure; plot(IsdMatrix(j,:), R_kOhm(j,:), '.-'); ylabel('Resistance [\Omega]'); title(T_K(j));
+end
+
+% Calculating the Heating Power
+for k=1:iTPts
+    HeaterPower_pW(k,:) = (IsdMatrix(k,:)-IsdNull(k)).^2.*R_kOhm(k,:)*1e-3;
+    %I2(k,:) = (Isd_nA-IsdNull(k)).^2;
+end
+
+% Fitting for Differential Conductance
+for k=1:iTPts
+    [DiffGFit, gof] = fit(HeaterPower_pW(k,5:36)', ElectronT(k,5:36)', 'poly1')
+    Tph(k) = DiffGFit.p2;
+    G_pWperK(k) = 0.01/DiffGFit.p1;
+    figure; plot(HeaterPower_pW(k,:), ElectronT(k,:),'.');
+    hold on; plot(DiffGFit); grid on;
+    xlabel('Power [pW]'); ylabel('Electron Temperature [K]'); title(T_K(k));
+end
+
+
+% Writing up the Conductance Data
+Tph = Tph;
+G_pWperK = G_pWperK;
+save('Tph.dat', 'Tph', '-ASCII', '-tabs')
+save('Conductance.dat', 'G_pWperK', '-ASCII', '-tabs')

@@ -1,0 +1,7 @@
+% Analyze the Three Omega Data
+
+% Get the S11
+for k=1:length(Vgate)
+    [MinValue, MinIndex] = min(S11Spectrum(k,:));
+    Fit4Extremum(Freq_GHz, S11Spectrum(k,:), Freq_GHz(MinIndex)
+end

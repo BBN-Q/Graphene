@@ -1,0 +1,4 @@
+% Analyze the Three Omega Data
+
+GenerateFileList
+VDirac = 0.3;   

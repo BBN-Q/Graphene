@@ -1,0 +1,22 @@
+% Getting File Names and Parameters in the running directory
+% Files are the SHOT NOISE THERMOMETRY data. Already averaged out from
+% spectrums
+% DataFileList
+% ParametersList = [Vds_mV, Vgate_V, T_K]
+FileList = ls;
+iTotalSpecFile = 0;
+clear DataFileList ParametersList;
+%ParametersList = [];
+for n=1:size(FileList,1);
+    if strfind(FileList(n,:),'S11_Vds');
+        iTotalSpecFile = iTotalSpecFile + 1;
+        %DataFileList(iTotalSpecFile, :) = FileList(n,:);
+        DataFileList(iTotalSpecFile, 1:size(FileList,2)) = FileList(n,:);
+        para1 = GetParametersBtnStrings(DataFileList(iTotalSpecFile,:), 'S11_Vds', 'mV_');
+        para2 = GetParametersBtnStrings(DataFileList(iTotalSpecFile,:), 'Vgate', 'V__T');
+        para3 = GetParametersBtnStrings(DataFileList(iTotalSpecFile,:), 'V__T', 'K_');o
+        ParametersList(iTotalSpecFile, :) = str2double({para1 para2 para3});
+        %ParametersList(iTotalSpecFile) = str2double({para1});
+    end
+end
+%clear FileList n iTotalSpecFile para1 para2 para3;

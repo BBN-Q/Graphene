@@ -1,0 +1,11 @@
+% Analyze the S11 in Gate Voltage Sweep
+% Constant or no heating power applied
+
+GenerateS11DataFileList
+Vgate = ParametersList(:,2);
+
+clear S11Minimum S11CenterFreq;
+for k=1:length(Vgate)
+    [S11Freq_GHz, S11Spectrum(k,:)] = GetReflectometryS11( DataFileList, ParametersList, Vgate(k));
+    [S11Minimum(k), S11CenterFreq(k)] = Fit4Extremum(S11Freq_GHz, S11Spectrum(k, (101:length(S11Freq_GHz))), 1.14, 50, 1)
+end

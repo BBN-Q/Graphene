@@ -6,8 +6,8 @@ TC.connect('12');
 TC.setUnitsKelvin();
 
 % Initialize variables
-file = fopen('C:\Users\qlab\Qlab\experiments\Graphene\50Ohm_Johnson_Noise\20140429_Cool_Down.txt','w');
-fprintf(file,'March 29th 2014. Cool down log of 3K BBN fridge\r\n\r\n');
+file = fopen('C:\Users\qlab\Documents\Graphene Data\3K Fridge T Oscillation\20140505_15K.txt','w');
+fprintf(file,'April 5th 2014. PID held at 15K\r\n\r\n');
 fprintf(file,'Time\tTemperature\r\n');
 
 % temperature log loop
@@ -16,8 +16,8 @@ pause(5)
 t=0;
 while true
     temp = TC.temperatureA();
-    pause(5)
+    pause(0.25)
     fprintf(file,'%d\t%G\r\n',[t,temp]);
-    pause(5);
+    pause(0.25);
     t=t+10;
 end

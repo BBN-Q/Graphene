@@ -7,6 +7,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%     CLEAR  and INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function CoolLogData = CryoCon_CoolLog()
 temp = instrfind;
 if ~isempty(temp)
     fclose(temp)
@@ -38,7 +39,7 @@ while true
     CoolLogData(j,:) = [etime(clock, StartTime) TC.temperatureA()];
     pause(DataInterval);
     FilePtr = fopen(fullfile(start_dir, FileName), 'a');
-    fprintf(FilePtr,'%d\t%G\r\n',CoolLogData(j,:));
+    fprintf(FilePtr,'%0.3f\t%f\r\n',CoolLogData(j,:));
     fclose(FilePtr);
     plot(CoolLogData(:,1)/60, CoolLogData(:,2)); grid on; xlabel('Time (min.)'); ylabel('Temperature (K)'); title(strcat('CoolLog using CryoCon, start date and time: ', datestr(StartTime)));
     j = j+1;

@@ -36,17 +36,26 @@ fclose(FilePtr);
 
 % temperature log loop
 j=1; WaitTime = 60*5;
-figure;
-for m = 2:length(SetTArray)
+figure; pause on; %pause(WaitTime*1.5);
+for m = 1:length(SetTArray)
     FilePtr = fopen(fullfile(start_dir, FileName), 'a');
     for k=1:20
         XCNoiseData(j,:) = [TC.temperatureA() str2num(DVM.value())]
         fprintf(FilePtr,'%f\t%f\r\n',XCNoiseData(j,:));
         j = j+1;
-        pause(3);
+        pause(1.5);
     end    
     fclose(FilePtr);
     TC.loopTemperature = SetTArray(m);
+    if SetTArray(m) < 21
+        TC.range='MID'; TC.pGain=1; TC.iGain=10;
+    elseif SetTArray(m) < 30
+        TC.range='MID'; TC.pGain=10; TC.iGain=70;
+    elseif SetTArray(m) < 45
+        TC.range='MID'; TC.pGain=50; TC.iGain=70;
+    else SetTArray(m) < 80
+        TC.range='HI'; TC.pGain=50; TC.iGain=70;
+    end           
     plot(XCNoiseData(:,1), XCNoiseData(:,2)); grid on; xlabel('T_{CryoCon} (K)'); ylabel('V_{Cross-Correlation} (V)'); title(strcat('XC Noise ', pwd));
     pause(WaitTime);
 end

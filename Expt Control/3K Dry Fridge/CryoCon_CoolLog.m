@@ -23,7 +23,7 @@ TC.connect('12');
 
 % Initialize variables
 DataInterval = input('Time interval in temperature readout (in second) = ');
-start_dir = 'C:\Users\qlab\Documents\Graphene Data\';
+start_dir = 'C:\Users\qlab\Documents\Graphene Data\3K Fridge CoolLog Repository\';
 start_dir = uigetdir(start_dir);
 StartTime = clock;
 FileName = strcat('CoolLog_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.dat');

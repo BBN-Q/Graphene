@@ -48,7 +48,7 @@ figure; pause on; %pause(WaitTime*1.5);
 for m = 1:length(SetTArray)
     FilePtr = fopen(fullfile(start_dir, FileName), 'a');
     TC.connect('12');
-    for k=1:20
+    for k=1:10
         switch inst
             case 'DVM'
                 DVM.connect('19');
@@ -76,6 +76,8 @@ for m = 1:length(SetTArray)
             TC.range='MID'; TC.pGain=10; TC.iGain=70;
         elseif SetTArray(m) < 45
             TC.range='MID'; TC.pGain=50; TC.iGain=70;
+        elseif SetTArray(m) < 100
+            TC.range='HI'; TC.pGain=50; TC.iGain=70;
         else
             TC.range='HI'; TC.pGain=50; TC.iGain=70;
         end

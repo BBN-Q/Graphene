@@ -48,20 +48,21 @@ figure; pause on; %pause(WaitTime*1.5);
 for m = 1:length(SetTArray)
     FilePtr = fopen(fullfile(start_dir, FileName), 'a');
     TC.connect('12');
+    sprintf(strcat('Taking data at set T = ', num2str(SetTArray(m)), ', progress = ', num2str(100*m/length(SetTArray)), '%%'))
     for k=1:10
         switch inst
             case 'DVM'
                 DVM.connect('19');
-                XCNoiseData(j,:) = [TC.temperatureA() str2num(DVM.value())]
+                XCNoiseData(j,:) = [TC.temperatureA() str2num(DVM.value())];
                 fprintf(FilePtr,'%f\t%e\r\n', XCNoiseData(j,:));
                 DVM.disconnect();
             case 'lockin'
                 Lockin.connect('8');
-                XCNoiseData(j,:) = [TC.temperatureA() Lockin.X Lockin.Y]
+                XCNoiseData(j,:) = [TC.temperatureA() Lockin.X Lockin.Y];
                 fprintf(FilePtr,'%f\t%e\t%e\r\n', XCNoiseData(j,:));
                 Lockin.disconnect();
             otherwise
-                XCNoiseData(j,:) = [TC.temperatureA() 0]
+                XCNoiseData(j,:) = [TC.temperatureA() 0];
                 fprintf(FilePtr,'%f\t%e\r\n', XCNoiseData(j,:));
         end
         j = j+1;
@@ -70,7 +71,9 @@ for m = 1:length(SetTArray)
     fclose(FilePtr);
     if m < length(SetTArray)
         TC.loopTemperature = SetTArray(m+1);
-        if SetTArray(m) < 21
+        if SetTArray(m) < 10
+            TC.range='LOW'; TC.pGain=1; TC.iGain=10;
+        elseif SetTArray(m) < 21
             TC.range='MID'; TC.pGain=1; TC.iGain=10;
         elseif SetTArray(m) < 30
             TC.range='MID'; TC.pGain=10; TC.iGain=70;
@@ -86,7 +89,10 @@ for m = 1:length(SetTArray)
     end
     TC.disconnect();
     plot(XCNoiseData(:,1), XCNoiseData(:,2)); grid on; xlabel('T_{CryoCon} (K)'); ylabel('V_{Cross-Correlation} (V)'); title(strcat('XC Noise ', pwd));
-    pause(TWaitTime);
+    if m < length(SetTArray)
+        sprintf(strcat('Waiting to new set T = ', num2str(SetTArray(m)), '...'))
+        pause(TWaitTime);
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

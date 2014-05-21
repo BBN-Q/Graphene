@@ -71,9 +71,7 @@ for m = 1:length(SetTArray)
     fclose(FilePtr);
     if m < length(SetTArray)
         TC.loopTemperature = SetTArray(m+1);
-        if SetTArray(m) < 10
-            TC.range='LOW'; TC.pGain=1; TC.iGain=10;
-        elseif SetTArray(m) < 21
+        if SetTArray(m) < 21
             TC.range='MID'; TC.pGain=1; TC.iGain=10;
         elseif SetTArray(m) < 30
             TC.range='MID'; TC.pGain=10; TC.iGain=70;

@@ -10,7 +10,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%     CLEAR  and INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [XCNoiseData, XCNoiseStatistics] = XCNoise_vs_T_Auto_v4(SetTArray)
+function [XCNoiseData, XCNoiseStatistics] = XCNoise_vs_T_Auto_v5(SetTArray)
 % Connect to the Cryo-Con 22 temperature controler
 TC = deviceDrivers.CryoCon22();
 
@@ -25,11 +25,31 @@ fprintf(FilePtr, strcat(datestr(StartTime), ' Cross Correlation Noise vs. Temper
 fprintf(FilePtr,'CryoConT_K\tCrossCorrelatedV_V\r\n');
 fclose(FilePtr);
 
-% temperature log loop
-TracesLength = 81920000; SamplingRate = 100e6; %TracesLength = 160240000; FreqMod = 1.37; 
-%WindowIndex = [[0.1e6 36.4e6]' [36.6e6 72.9e6]'];
-ModWave = cat(1, zeros(0.1e6, 1), ones(36.3e6, 1), zeros(0.2e6,1), -ones(36.3e6, 1), zeros(9.02e6,1));
-ModWave = -ModWave;
+
+TracesLength = 81920000; 
+SamplingRate = 100e6;
+ModFreq=13.7; %Hz=
+ModFreq=round(SamplingRate/ModFreq); %convert freq into points
+ModWavetmp=zeros(TracesLength,1);
+switchingTime=2E-3; %switching time in sec. removes this time frm data.
+zeroLength=switchingTime*SamplingRate;
+n=floor(TracesLength/ModFreq);
+
+for i=0:n
+    kp1=i*ModFreq+1; %starting point
+    kp2=kp1+zeroLength/2; %jump to -1
+    kp3=kp2+ModFreq/2-zeroLength; %jump to 0
+    kp4=kp3+zeroLength; %jump to 1
+    kp5=kp4+ModFreq/2-zeroLength; %jump to 0
+    kp6=kp5+zeroLength/2; %ending point
+    ModWavetmp(kp1:kp2)=0;
+    ModWavetmp(kp2:kp3)=-1;
+    ModWavetmp(kp3:kp4)=0;
+    ModWavetmp(kp4:kp5)=1;
+    ModWavetmp(kp5:kp6)=0;
+end
+ModWave=ModWavetmp(1:TracesLength);
+
 
 j=1;
 figure; pause on; %pause(WaitTime*1.5);
@@ -44,12 +64,12 @@ for m = 1:length(SetTArray)
         XCNoiseStatistics.ChBMean(j) = mean(DoubleTraces(:,3));
         XCNoiseStatistics.ChAStd(j) = std(DoubleTraces(:,2));
         XCNoiseStatistics.ChBStd(j) = std(DoubleTraces(:,3));
-        %DoubleTraces(:,2) = DoubleTraces(:,2) - XCNoiseStatistics.ChAMean(j);
-        %DoubleTraces(:,3) = DoubleTraces(:,3) - XCNoiseStatistics.ChBMean(j);
-        XCNoiseData(j,:) = [XCNoiseStatistics.Temperature(j) dot(DoubleTraces(:,2).*DoubleTraces(:,3), ModWave)/length(DoubleTraces)];
+        DoubleTraces(:,2) = DoubleTraces(:,2) - XCNoiseStatistics.ChAMean(j);
+        DoubleTraces(:,3) = DoubleTraces(:,3) - XCNoiseStatistics.ChBMean(j);
+        XCNoiseData(j,:) = [XCNoiseStatistics.Temperature(j), mean(DoubleTraces(:,2).*DoubleTraces(:,3).*ModWave)];
         clear DoubleTraces;
         fprintf(FilePtr,'%f\t%e\r\n', XCNoiseData(j,:));
-        j = j+1;
+        j=j+1;
     end    
     fclose(FilePtr);
     %AllDoubleTraces(:,j) = DoubleTraces(:,2);

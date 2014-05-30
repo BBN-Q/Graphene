@@ -2,15 +2,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%     What and hOw?      %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Manual Cross-Correlation Noise Testing
-% version 3.0
-% Modulation with truncation
+% version 4.0
+% Modulation using pre-defined square wave
 % Created in May 2014 by KC Fong
 % Using ALAZAR TECH
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%     CLEAR  and INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [XCNoiseData, XCNoiseStatistics] = XCNoise_vs_T_Auto_v3(SetTArray, FreqMod)
+function [XCNoiseData, XCNoiseStatistics] = XCNoise_vs_T_Auto_v3(SetTArray)
 % Connect to the Cryo-Con 22 temperature controler
 TC = deviceDrivers.CryoCon22();
 
@@ -26,8 +26,10 @@ fprintf(FilePtr,'CryoConT_K\tCrossCorrelatedV_V\r\n');
 fclose(FilePtr);
 
 % temperature log loop
-TracesLength = 160240000; FreqMod = 13.7; SamplingRate = 100e6;
-TruncatedPts = floor(mod(TracesLength/SamplingRate, 1/FreqMod)*SamplingRate);
+TracesLength = 81920000; SamplingRate = 100e6; %TracesLength = 160240000; FreqMod = 1.37; 
+WindowIndex = [[0.1e6 36.4e6]' [36.6e6 72.9e6]'];
+ModWave = cat(1, zeros(0.1e6, 1), ones(36.3e6, 1), zeros(0.2e6,1), -ones(36.3e6, 1), zeros(9.02e6,1));
+ModWave = -ModWave;
 
 j=1;
 figure; pause on; %pause(WaitTime*1.5);
@@ -35,19 +37,19 @@ for m = 1:length(SetTArray)
     FilePtr = fopen(fullfile(start_dir, FileName), 'a');
     TC.connect('12');
     sprintf(strcat('Taking data at set T = ', num2str(SetTArray(m)), ', progress = ', num2str(100*m/length(SetTArray)), '%%'))
-    for k=1:2
+    for k=1:4
         DoubleTraces = GetAlazarTraces(0.04, SamplingRate, TracesLength, 'False');
         XCNoiseStatistics.Temperature(j) = TC.temperatureA();
-        XCNoiseStatistics.ChAMean(j) = mean(DoubleTraces(1:end-TruncatedPts,2));
-        XCNoiseStatistics.ChBMean(j) = mean(DoubleTraces(1:end-TruncatedPts,3));
-        XCNoiseStatistics.ChAStd(j) = std(DoubleTraces(1:end-TruncatedPts,2));
-        XCNoiseStatistics.ChBStd(j) = std(DoubleTraces(1:end-TruncatedPts,3));
-        TrunDoubleTraces(:,1) = DoubleTraces(1:end-TruncatedPts,2) - XCNoiseStatistics.ChAMean(j);
-        TrunDoubleTraces(:,2) = DoubleTraces(1:end-TruncatedPts,3) - XCNoiseStatistics.ChBMean(j);
+        XCNoiseStatistics.ChAMean(j) = mean(DoubleTraces(:,2));
+        XCNoiseStatistics.ChBMean(j) = mean(DoubleTraces(:,3));
+        XCNoiseStatistics.ChAStd(j) = std(DoubleTraces(:,2));
+        XCNoiseStatistics.ChBStd(j) = std(DoubleTraces(:,3));
+        DoubleTraces(WindowIndex(1,1):WindowIndex(2,1),2) = DoubleTraces(WindowIndex(1,1):WindowIndex(2,1),2) - mean(DoubleTraces(WindowIndex(1,1):WindowIndex(2,1),2));
+        DoubleTraces(WindowIndex(1,2):WindowIndex(2,2),2) = DoubleTraces(WindowIndex(1,2):WindowIndex(2,2),2) - mean(DoubleTraces(WindowIndex(1,2):WindowIndex(2,2),2));
+        DoubleTraces(WindowIndex(1,1):WindowIndex(2,1),3) = DoubleTraces(WindowIndex(1,1):WindowIndex(2,1),3) - mean(DoubleTraces(WindowIndex(1,1):WindowIndex(2,1),3));
+        DoubleTraces(WindowIndex(1,2):WindowIndex(2,2),3) = DoubleTraces(WindowIndex(1,2):WindowIndex(2,2),3) - mean(DoubleTraces(WindowIndex(1,2):WindowIndex(2,2),3));
+        XCNoiseData(j,:) = [XCNoiseStatistics.Temperature(j) dot(DoubleTraces(:,2).*DoubleTraces(:,3), ModWave)/length(DoubleTraces)];
         clear DoubleTraces;
-        ModWave = squarewave(FreqMod, SamplingRate, TracesLength);
-        XCNoiseData(j,:) = [XCNoiseStatistics.Temperature(j) dot(TrunDoubleTraces(:,1).*TrunDoubleTraces(:,2), ModWave(1:end-TruncatedPts))/length(TrunDoubleTraces)];
-        clear TrunDoubleTraces;
         fprintf(FilePtr,'%f\t%e\r\n', XCNoiseData(j,:));
         j = j+1;
     end    

@@ -35,8 +35,8 @@ for m = 1:length(SetTArray)
     sprintf(strcat('Taking data at set T = ', num2str(SetTArray(m)), ', progress = ', num2str(100*m/length(SetTArray)), '%%'))
     for k=1:20
         DoubleTraces = GetAlazarTraces(.2, 100e6, TraceLength, 'False');
-        VstarV = conj(fft(DoubleTraces(:,2))).*fft(DoubleTraces(:,3));
-        AvgXCPSD = mean(VstarV(BWIndex(1):BWIndex(2)))/(BWIndex(2)-BWIndex(1)+1);     
+        FFT1stTrace = fft(DoubleTraces(:,2)); FFT2ndTrace = fft(DoubleTraces(:,3));
+        AvgXCPSD = dot(conj(FFT1stTrace(BWIndex(1):BWIndex(2))), FFT2ndTrace(BWIndex(1):BWIndex(2)))/(BWIndex(2)-BWIndex(1)+1);     
         XCNoiseData(j,:) = [TC.temperatureA() AvgXCPSD];
         fprintf(FilePtr,'%f\t%e\t%e\r\n', [XCNoiseData(j,1)  real(XCNoiseData(j,2)) imag(XCNoiseData(j,2))]);
         j = j+1;

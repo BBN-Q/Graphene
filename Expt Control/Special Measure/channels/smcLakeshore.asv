@@ -1,0 +1,15 @@
+function val = smcLakeshore(ico, val, rate)
+
+global smdata;
+
+switch ico(2) %channel
+    case 1 %A channel
+        switch ico(3) %operation     
+            case 0 
+                val = query(smdata.inst(ico(1)).data.inst,  'KRDG? 0', '%s\n', '%f');            otherwise
+            otherwise
+                error('Operation not supported');
+        end
+    case 2 %B channel
+        
+end

@@ -1,0 +1,43 @@
+function val = smcCryomagCS4(ico, val, rate)
+%Driver for the Cryomagnetics CS-4 power supply
+%channel 1 = voltage manual ramp
+%channel 2 = current
+
+global smdata;
+
+switch ico(2) %channel
+    case 1 %magnetic field
+        switch ico(3) %operation
+            case 0 %get
+                fprintf(smdata.inst(ico(1)).data.inst,'UNITS T');
+                val = query(smdata.inst(ico(1)).data.inst, 'IMAG?','%s','%f %*c');
+            case 1 %set
+                
+                if rate < 0 || rate > MAX
+                    error('Ramp rate unacceptable');
+                
+                fprintf(smdata.inst(ico(1)).data.inst,'UNITS T');
+                quer = query(smdata.inst(ico(1)).data.inst, 'IMAG?','%s','%f %*c'); %Get current value
+                fprintf(smdata.inst(ico(1)).data.inst, ['RATE 0 ' num2str(rate)]);   %Set rate the same for all ranges
+                fprintf(smdata.inst(ico(1)).data.inst, ['RATE 1 ' num2str(rate)]);
+                fprintf(smdata.inst(ico(1)).data.inst, ['RATE 2 ' num2str(rate)]);
+                
+                if val > quer   %Are We Sweeping Up or Sweeping Down?
+                    fprintf(smdata.inst(ico(1)).data.inst, ['LLIM ' num2str(quer)]);
+                    fprintf(smdata.inst(ico(1)).data.inst, ['ULIM ' num2str(val)]);
+                    fprintf(smdata.inst(ico(1)).data.inst, ' SWEEP UP');
+                else
+                    fprintf(smdata.inst(ico(1)).data.inst, ['ULIM ' num2str(val)]);   
+                    fprintf(smdata.inst(ico(1)).data.inst, ['LLIM ' num2str(quer)]);
+                    fprintf(smdata.inst(ico(1)).data.inst, 'SWEEP DOWN') ;
+                end
+                
+                val = abs(val-quer)/abs(rate);
+               
+                
+            otherwise
+                error('Operation not supported');
+        end
+    otherwise
+        error('Channel not supported');
+end

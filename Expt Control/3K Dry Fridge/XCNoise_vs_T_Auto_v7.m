@@ -26,15 +26,18 @@ fclose(FilePtr);
 
 % temperature log loop
 j=1;
-TraceLength = 2^27; Freq_MHz = 1e-6*linspace(0, 100e6, TraceLength); AnalyzingBandwidth_MHz = [19 24];
+TraceLength = 2^26; Freq_MHz = 1e-6*linspace(0, 100e6, TraceLength); AnalyzingBandwidth_MHz = [19 24];
 BWIndex = round(interp1(Freq_MHz, linspace(1,TraceLength, TraceLength), AnalyzingBandwidth_MHz));
+Freq_MHz(BWIndex)
 figure; pause on; %pause(WaitTime*1.5);
 for m = 1:length(SetTArray)
     FilePtr = fopen(fullfile(start_dir, FileName), 'a');
     TC.connect('12');
     sprintf(strcat('Taking data at set T = ', num2str(SetTArray(m)), ', progress = ', num2str(100*m/length(SetTArray)), '%%'))
     for k=1:20
-        DoubleTraces = GetAlazarTraces(.2, 100e6, TraceLength, 'False');
+        DoubleTraces = GetAlazarTraces(.04, 100e6, TraceLength, 'False');
+        %VstarV = conj(fft(DoubleTraces(:,2))).*fft(DoubleTraces(:,3));
+        %AvgXCPSD = sum(VstarV(BWIndex(1):BWIndex(2)))/(BWIndex(2)-BWIndex(1)+1);
         FFT1stTrace = fft(DoubleTraces(:,2)); FFT2ndTrace = fft(DoubleTraces(:,3));
         AvgXCPSD = dot(conj(FFT1stTrace(BWIndex(1):BWIndex(2))), FFT2ndTrace(BWIndex(1):BWIndex(2)))/(BWIndex(2)-BWIndex(1)+1);     
         XCNoiseData(j,:) = [TC.temperatureA() AvgXCPSD];

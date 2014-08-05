@@ -8,7 +8,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%     CLEAR  and INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [XCNoiseStatistics] = XCNoise_statistics_A1(T,n,inst)
+function [XCNoiseData, XCNoiseStatistics] = XCNoise_statistics_A1(T,n,inst)
 temp = instrfind;
 if ~isempty(temp)
     fclose(temp);
@@ -62,11 +62,10 @@ else
     TC.range='HI'; TC.pGain=50; TC.iGain=70;
 end
 pause on;
-Pause(TWaitTime);
+pause(TWaitTime);
 
 % temperature log loop
-j=1;
-figure;
+FilePtr = fopen(fullfile(start_dir, FileName), 'a');
 for k=1:n
     meanTemp=0;
     pause(0.5);
@@ -79,19 +78,21 @@ for k=1:n
     switch inst
         case 'DVM'
             DVM.connect('19');
-            XCNoiseData(j,:) = [meanTemp str2num(DVM.value())];
-            fprintf(FilePtr,'%f\t%e\r\n', XCNoiseData(j,:));
+            XCNoiseData(k,:) = [meanTemp str2num(DVM.value())];
+            fprintf(FilePtr,'%f\t%e\r\n', XCNoiseData(k,:));
             DVM.disconnect();
         case 'lockin'
             Lockin.connect('8');
-            XCNoiseData(j,:) = [meanTemp Lockin.R Lockin.theta];
-            fprintf(FilePtr,'%f\t%e\t%e\r\n', XCNoiseData(j,:));
+            XCNoiseData(k,:) = [meanTemp Lockin.R Lockin.theta];
+            fprintf(FilePtr,'%f\t%e\t%e\r\n', XCNoiseData(k,:));
             Lockin.disconnect();
         otherwise
-            XCNoiseData(j,:) = [meanTemp 0];
-            fprintf(FilePtr,'%f\t%e\r\n', XCNoiseData(j,:));
+            XCNoiseData(k,:) = [meanTemp 0];
+            fprintf(FilePtr,'%f\t%e\r\n', XCNoiseData(k,:));
     end
-    j = j+1;
+    if mod(k,100)==0
+        k
+    end
 end
 fclose(FilePtr);
 TC.loopTemperature = 0; TC.range='LOW'; TC.pGain=1; TC.iGain=1;

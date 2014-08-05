@@ -25,23 +25,24 @@ fprintf(FilePtr, strcat(datestr(StartTime), ' Cross Correlation Noise vs. Temper
 fprintf(FilePtr,'CryoConT_K\tCrossCorrelatedV_V\r\n');
 fclose(FilePtr);
 
+tic
 
 TracesLength = 160240000; 
 SamplingRate = 100e6;
-ModFreq=13.7; %Hz=
-ModFreq=round(SamplingRate/ModFreq); %convert freq into points
+ModFreq=13.7; %Hz
+ModLength=round(SamplingRate/ModFreq); %convert freq into points
 ModWavetmp1=zeros(TracesLength,1);
 ModWavetmp2=zeros(TracesLength,1);
 switchingTime=2E-3; %switching time in sec. removes this time frm data.
 zeroLength=switchingTime*SamplingRate;
-n=floor(TracesLength/ModFreq);
+n=floor(TracesLength/ModLength);
 
 for i=0:n
-    kp1=i*ModFreq+1; %starting point
+    kp1=i*ModLength+1; %starting point
     kp2=kp1+zeroLength/2; %jump to -1
-    kp3=kp2+ModFreq/2-zeroLength; %jump to 0
+    kp3=kp2+ModLength/2-zeroLength; %jump to 0
     kp4=kp3+zeroLength; %jump to 1
-    kp5=kp4+ModFreq/2-zeroLength; %jump to 0
+    kp5=kp4+ModLength/2-zeroLength; %jump to 0
     kp6=kp5+zeroLength/2; %ending point
     
     ModWavetmp1(kp1:kp2)=0;
@@ -50,11 +51,11 @@ for i=0:n
     ModWavetmp1(kp4:kp5)=1;
     ModWavetmp1(kp5:kp6)=0;
     
-    ModWavetmp1(kp1:kp2)=0;
-    ModWavetmp1(kp2:kp3)=1;
-    ModWavetmp1(kp3:kp4)=0;
-    ModWavetmp1(kp4:kp5)=0;
-    ModWavetmp1(kp5:kp6)=0;
+    ModWavetmp2(kp1:kp2)=0;
+    ModWavetmp2(kp2:kp3)=1;
+    ModWavetmp2(kp3:kp4)=0;
+    ModWavetmp2(kp4:kp5)=0;
+    ModWavetmp2(kp5:kp6)=0;
 end
 ModWave1=ModWavetmp1(1:TracesLength);
 ModWave2=ModWavetmp2(1:TracesLength);
@@ -66,7 +67,7 @@ for m = 1:length(SetTArray)
     FilePtr = fopen(fullfile(start_dir, FileName), 'a');
     TC.connect('12');
     sprintf(strcat('Taking data at set T = ', num2str(SetTArray(m)), ', progress = ', num2str(100*m/length(SetTArray)), '%%'))
-    for k=1:4
+    for k=1:10
         DoubleTraces = GetAlazarTraces(0.04, SamplingRate, TracesLength, 'False');
         XCNoiseStatistics.Temperature(j) = TC.temperatureA();
         XCNoiseStatistics.ChAMean(j) = mean(DoubleTraces(:,2));
@@ -75,7 +76,7 @@ for m = 1:length(SetTArray)
         XCNoiseStatistics.ChBStd(j) = std(DoubleTraces(:,3));
         DoubleTraces(:,2) = DoubleTraces(:,2) - XCNoiseStatistics.ChAMean(j);
         DoubleTraces(:,3) = DoubleTraces(:,3) - XCNoiseStatistics.ChBMean(j);
-        XCNoiseData(j,:) = [XCNoiseStatistics.Temperature(j), mean(DoubleTraces(:,2).*DoubleTraces(:,3).*ModWave1)-mean(DoubleTraces(:,2).*DoubleTraces(:,3).*ModWave2)];
+        XCNoiseData(j,:) = [XCNoiseStatistics.Temperature(j), sum(DoubleTraces(:,2).*DoubleTraces(:,3).*ModWave1)/sum(ModWave1)-sum(DoubleTraces(:,2).*DoubleTraces(:,3).*ModWave2)/sum(ModWave2)];
         clear DoubleTraces;
         fprintf(FilePtr,'%f\t%e\r\n', XCNoiseData(j,:));
         j=j+1;
@@ -105,6 +106,7 @@ for m = 1:length(SetTArray)
         pause(TWaitTime);
     end
 end
+toc
 pause off;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%       Clear     %%%%%%%%%%%%%%%%%%%%%%%%

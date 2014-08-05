@@ -33,17 +33,19 @@ end
 % Initialize variables
 TWaitTime = input('Enter waiting time for temperature stabilizing to new set point in seconds: ');
 LockinWaitTime = input('Enter waiting time for new cross-correlation voltage data point in seconds: ');
+autoGain=input('Autogain Lockin after each temperature change? (0 or 1)');
+filenumber=input('Input unique file number : ','s');
 start_dir = pwd;
 start_dir = uigetdir(start_dir);
 StartTime = clock;
-FileName = strcat('XCNoise_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.dat');
+FileName = strcat('XCNoise_', datestr(StartTime, 'yyyymmdd_HHMMSS'),'_',filenumber,  '.dat');
 FilePtr = fopen(fullfile(start_dir, FileName), 'w');
 fprintf(FilePtr, strcat(datestr(StartTime), ' Cross Correlation Noise vs. Temperature using CryoCon\r\n'));
 switch inst
     case 'DVM'
         fprintf(FilePtr,'CryoConT_K\tMultiplier_V\r\n');
     case 'lockin'
-        fprintf(FilePtr,'CryoConT_K\tLockin_R\tLockin_theta\r\n');
+        fprintf(FilePtr,'CryoConT_K\tLockin_X\tLockin_Y\r\n');
 end
 fclose(FilePtr);
 
@@ -54,7 +56,7 @@ for m = 1:length(SetTArray)
     FilePtr = fopen(fullfile(start_dir, FileName), 'a');
     TC.connect('12');
     disp(strcat('Taking data at set T = ', num2str(SetTArray(m)), ', progress = ', num2str(100*m/length(SetTArray)), '%%'));
-    for k=1:10
+    for k=1:100
         switch inst
             case 'DVM'
                 DVM.connect('19');
@@ -63,7 +65,7 @@ for m = 1:length(SetTArray)
                 DVM.disconnect();
             case 'lockin'
                 Lockin.connect('8');
-                XCNoiseData(j,:) = [TC.temperatureA() Lockin.R Lockin.theta];
+                XCNoiseData(j,:) = [TC.temperatureA() Lockin.X Lockin.Y];
                 fprintf(FilePtr,'%f\t%e\t%e\r\n', XCNoiseData(j,:));
                 Lockin.disconnect();
             otherwise
@@ -72,11 +74,13 @@ for m = 1:length(SetTArray)
         end
         j = j+1;
         pause(LockinWaitTime);
-    end    
+    end
     fclose(FilePtr);
     if m < length(SetTArray)
         TC.loopTemperature = SetTArray(m+1);
-        if SetTArray(m) < 21
+        if SetTArray(m) < 5
+            TC.range='LOW'; TC.pGain=10; TC.iGain=10;
+        elseif SetTArray(m) < 21
             TC.range='MID'; TC.pGain=1; TC.iGain=10;
         elseif SetTArray(m) < 30
             TC.range='MID'; TC.pGain=10; TC.iGain=70;
@@ -95,6 +99,12 @@ for m = 1:length(SetTArray)
     if m < length(SetTArray)
         disp(strcat('Waiting to new set T = ', num2str(SetTArray(m)), '...'))
         pause(TWaitTime);
+    end
+    if autoGain==1
+        Lockin.connect('8');
+        Lockin.auto_gain();
+        pause(10);
+        Lockin.disconnect();
     end
 end
 

@@ -31,8 +31,8 @@ for m = 1:length(SetTArray)
     FilePtr = fopen(fullfile(start_dir, FileName), 'a');
     TC.connect('12');
     sprintf(strcat('Taking data at set T = ', num2str(SetTArray(m)), ', progress = ', num2str(100*m/length(SetTArray)), '%%'))
-    for k=1:2
-        DoubleTraces = GetAlazarTraces(0.04, 100e6, 160240000, 'False');
+    for k=1:10
+        DoubleTraces = GetAlazarTraces(0.04, 500e6, 20E6, 'False');
         XCNoiseStatistics.ChAMean(j) = mean(DoubleTraces(:,2));
         XCNoiseStatistics.ChBMean(j) = mean(DoubleTraces(:,3));
         XCNoiseStatistics.ChAStd(j) = std(DoubleTraces(:,2));

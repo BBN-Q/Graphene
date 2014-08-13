@@ -22,7 +22,7 @@ fclose all;
 TC = deviceDrivers.CryoCon22();
 TC.connect('12');
 Lockin = deviceDrivers.SRS830();
-Lockin.connect('8');
+Lockin.connect('7');
 
 % Initialize variables
 DataInterval = input('Time interval in temperature readout (in second) = ');

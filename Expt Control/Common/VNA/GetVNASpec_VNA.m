@@ -11,7 +11,7 @@
 function spec = GetVNASpec_VNA()
 
 na = deviceDrivers.AgilentE8363C();
-na.connect('128.33.89.127')
+na.connect('192.168.5.101')
 [spec(:,1) spec(:,2)] = na.getTrace();
 na.disconnect();
 

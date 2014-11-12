@@ -7,7 +7,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%     CLEAR  and INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function CoolLogData = CryoCon_XC_CoolLog(spec)
+function spec = CryoCon_XC_Spec_CoolLog()
 temp = instrfind;
 if ~isempty(temp)
     fclose(temp)
@@ -19,6 +19,7 @@ fclose all;
 
 % Connect to the Cryo-Con 22 temperature controler
 TC = deviceDrivers.CryoCon22();
+SA = deviceDrivers.HP71000();
 
 %Connect to Lockin
 Lockin = deviceDrivers.SRS830();
@@ -34,17 +35,22 @@ fprintf(FilePtr, strcat(datestr(StartTime), ' CoolLog using CryoCon and XC @ 1s\
 fprintf(FilePtr,'Time_s\tTemperature_K\tLockinX_V\tLockinY_V\r\n');
 fclose(FilePtr);
 
+global spec;
 % temperature log loop
 j=1;
 figure; pause on;
-
+SA.connect('18');
+[freq, amp]=SA.downloadTrace();
+spec.freq=freq;
+SA.disconnect();
+T=300;
 while true
     TC.connect('12');
     Lockin.connect('8');
-    Temperature =TC.temperatureA();
+    T =TC.temperatureA();
     X=Lockin.X;
     Y=Lockin.Y;
-    CoolLogData(j,:) = [etime(clock, StartTime) Temperature X Y];
+    CoolLogData(j,:) = [etime(clock, StartTime) T X Y];
     TC.disconnect();
     Lockin.disconnect();
     pause(DataInterval);
@@ -56,6 +62,16 @@ while true
     ylabel(hAx(1),'Temperature (K)');
     ylabel(hAx(2),'Lockin XC (V)');
     j = j+1;
+    if mod(j,10)==0
+        n=j/10;
+        SA.connect('18');
+        [freq, amp]=SA.downloadTrace();
+        SA.disconnect();
+        spec.T(n)= T;
+        spec.X(n)=X;
+        spec.Y(n)=Y;
+        spec.Amp(n,:)=amp;
+    end
    
         
         

@@ -3,12 +3,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Manual Cross-Correlation Noise Testing
 % version 1.0
-% Created in May 2014 by KC Fong
+% Created in May 2014 by KC Fong and Jess Crossno
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%     CLEAR  and INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function XCNoiseData = XCNoise_vs_T_Analog_v1(SetTArray, inst)
+function [XCNoiseData, spec] = XCNoise_vs_T_Analog_v2(SetTArray, inst)
 temp = instrfind;
 if ~isempty(temp)
     fclose(temp)
@@ -50,6 +50,13 @@ switch inst
 end
 fclose(FilePtr);
 
+SA = deviceDrivers.HP71000();
+SA.connect('18');
+[freq, amp]=SA.downloadTrace();
+spec.freq=freq;
+SA.disconnect();
+
+
 % temperature log loop
 j=1;
 figure; pause on;
@@ -74,19 +81,19 @@ for m = 1:length(SetTArray)
     end
     disp(strcat('Waiting to new set T = ', num2str(SetTArray(m)), '...'))
     disp(datestr(clock,'HH:MM:SS'));
-    if SetTArray(m)~=0
+    %if SetTArray(m)~=0
         pause(TWaitTime);
-    end
+    %end
     if autoGain==1
         Lockin.connect('8');
         Lockin.auto_gain();
-        pause(10);
+        pause(20);
         Lockin.disconnect();
     end
     disp(strcat('Taking data at set T = ', num2str(SetTArray(m)), ', progress = ', num2str(100*m/length(SetTArray)), '%'));
     disp(datestr(clock,'HH:MM:SS'));
     tic
-    for k=1:25000
+    for k=1:100
         switch inst
             case 'DVM'
                 DVM.connect('19');
@@ -105,6 +112,14 @@ for m = 1:length(SetTArray)
         j = j+1;
         pause(LockinWaitTime);
     end
+    
+    SA.connect('18');
+    [freq, amp]=SA.downloadTrace();
+    SA.disconnect();
+    spec.T(m)= TC.temperatureA();
+    spec.Amp(m,:)=amp;
+    
+    
     toc
     fclose(FilePtr);
     scatter(XCNoiseData(:,1), XCNoiseData(:,2)); grid on; xlabel('T_{CryoCon} (K)'); ylabel('XC Voltage (V)'); title(strcat('XC Noise ', pwd));

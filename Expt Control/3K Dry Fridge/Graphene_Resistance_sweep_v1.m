@@ -20,10 +20,11 @@
 %Vsd is the volatage drop across the graphene
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [data] = Graphene_Noise_Main_v3(T_Array,Vg_Array,Vex_Array)
+function [data] = Graphene_Resistance_sweep_v1(T_Array,Vg_Array,Vex)
 tic
 % Initialize the path and create the data file with header
 Nmeasurements = input('How many measurements per parameter point? ');
+Rex=1E7; disp('Setting Rex to 10 MOhm'); %used to calculate R from Vsd
 TWaitTime = input('Enter temperature equilibration time: ');
 VWaitTime1 = input('Enter initial Vg equilibration time: ');
 VWaitTime2 = input('Enter Vg equilibration time for each step: ');
@@ -103,10 +104,10 @@ end
 if max(abs(Vg_Array))>Vg_max
     error('Gate voltage is set above Vg_max')
 end
-if max(abs(Vex_Array))>Vex_max
+if max(abs(Vex))>Vex_max
     error('Excitation voltage is set above Vex_max')
 end
-
+LA1.sineAmp=Vex;
 %Save SA freq
 if Spectrum=='Y'
     [freq, amp]=SA.downloadTrace();
@@ -122,9 +123,7 @@ if Vector=='Y'
     data.VNA.freq=freq;
 end
 
-CurrentMeasurementNumber=1; %keeps track of which measurment you are on
-CurrentParameterSet=1; %keeps track of the unique parameter configs
-CurrentSpectrumSet=1; %keeps track of what spectrum number you are on
+
 pause on;
 
 %Enter Tmperature Sweep
@@ -162,108 +161,99 @@ for T_n = 1:length(T_Array)
             pause(VWaitTime2);
         end
         
-        %enter Xxcitation Voltage sweep
-        for Vex_n=1:length(Vex_Array)
-            CurrentVex=Vex_Array(Vex_n);
-            LA1.sineAmp=CurrentVex;
+        %take "Nmeasurement" measurements
+        for n=1:Nmeasurements
             
-            %comment this line out if you dont want auto gain/phase
-           % pause(20)
-           % LA1.auto_gain;%LA1.auto_phase;
-           % LA2.auto_gain;%LA2.auto_phase;
-           % pause(20);
+            %wait MeasurmentWaitTime and find average Temperature
+            %if Measurment Wait Time < 100ms, record single T Cryostat
+            CurrentTemp=0;
             
-            %take "Nmeasurement" measurements
-            for n=1:Nmeasurements
-                
-                %wait MeasurmentWaitTime and find average Temperature
-                %if Measurment Wait Time < 100ms, record single T Cryostat
-                CurrentTemp=0;
-                
-                for j=1:max(floor(MeasurementWaitTime*10),1)
-                    CurrentTemp=CurrentTemp+TC.temperatureA();
-                    pause(0.1);
-                end
-                
-                CurrentTemp=CurrentTemp/max(floor(MeasurementWaitTime*10),1);
-                
-                %Record current Source-Drain Voltage across graphene
-                [VsdX,VsdY,VsdR,VsdTH]=LA1.get_signal2();
-                
-                %Record current noise voltage
-
-                [VnX,VnY,VnR,VnTH]=LA2.get_signal2();
-                
-                %Recond the time
-                CurrentTime=clock;
-                
-                %add results into "data"
-                data.raw.time(CurrentMeasurementNumber)=round(etime(CurrentTime,StartTime)*100)/100;
-                data.raw.CryoT(CurrentMeasurementNumber)=CurrentTemp;
-                data.raw.Vg(CurrentMeasurementNumber)=CurrentVg;
-                data.raw.Vex(CurrentMeasurementNumber)=CurrentVex;
-                data.raw.VsdX(CurrentMeasurementNumber)=VsdX;
-                data.raw.VsdY(CurrentMeasurementNumber)=VsdY;
-                data.raw.VsdR(CurrentMeasurementNumber)=VsdR;
-                data.raw.VsdTH(CurrentMeasurementNumber)=VsdTH;
-                data.raw.VnX(CurrentMeasurementNumber)=VnX;
-                data.raw.VnY(CurrentMeasurementNumber)=VnY;
-                data.raw.VnR(CurrentMeasurementNumber)=VnR;
-                data.raw.VnTH(CurrentMeasurementNumber)=VnTH;
-                
-                %save results to file
-                tmp=[CurrentTemp,CurrentVg,CurrentVex,VsdX,VsdY,VnX,VnY];
-                FilePtr = fopen(fullfile(start_dir, FileName), 'a');
-                fprintf(FilePtr,'%s\t',datestr(CurrentTime,'HH:MM:SS'));
-                fprintf(FilePtr,'%g\t%g\t%g\t%g\t%g\t%g\t%g\r\n',tmp);
-                fclose(FilePtr);
-                
-                %increment the measurement number
-                CurrentMeasurementNumber=CurrentMeasurementNumber+1;
+            for j=1:max(floor(MeasurementWaitTime*10),1)
+                CurrentTemp=CurrentTemp+TC.temperatureA();
+                pause(0.1);
             end
             
+            CurrentTemp=CurrentTemp/max(floor(MeasurementWaitTime*10),1);
             
+            %Record current Source-Drain Voltage across graphene
+            [VsdX,VsdY,VsdR,VsdTH]=LA1.get_signal2();
             
-            %calculate averages and standard deviation for parameter set
-            data.time(CurrentParameterSet,:)=[data.raw.time(end-Nmeasurements+1),data.raw.time(end)];
-            data.CryoT(CurrentParameterSet)=mean(data.raw.CryoT(end-Nmeasurements+1:end));
-            data.std.CryoT(CurrentParameterSet)=std(data.raw.CryoT(end-Nmeasurements+1:end));
-            data.Vg(CurrentParameterSet)=mean(data.raw.Vg(end-Nmeasurements+1:end));
-            data.Vex(CurrentParameterSet)=mean(data.raw.Vex(end-Nmeasurements+1:end));
+            %Record current noise voltage
             
-            data.VsdX(CurrentParameterSet)=mean(data.raw.VsdX(end-Nmeasurements+1:end));
-            data.std.VsdX(CurrentParameterSet)=std(data.raw.VsdX(end-Nmeasurements+1:end));
-            data.VsdY(CurrentParameterSet)=mean(data.raw.VsdY(end-Nmeasurements+1:end));
-            data.std.VsdY(CurrentParameterSet)=std(data.raw.VsdY(end-Nmeasurements+1:end));
-            data.VsdR(CurrentParameterSet)=mean(data.raw.VsdR(end-Nmeasurements+1:end));
-            data.std.VsdR(CurrentParameterSet)=std(data.raw.VsdR(end-Nmeasurements+1:end));
-            data.VsdTH(CurrentParameterSet)=mean(data.raw.VsdTH(end-Nmeasurements+1:end));
-            data.std.VsdTH(CurrentParameterSet)=std(data.raw.VsdTH(end-Nmeasurements+1:end));
+            [VnX,VnY,VnR,VnTH]=LA2.get_signal2();
             
-            data.VnX(CurrentParameterSet)=mean(data.raw.VnX(end-Nmeasurements+1:end));
-            data.std.VnX(CurrentParameterSet)=std(data.raw.VnX(end-Nmeasurements+1:end));
-            data.VnY(CurrentParameterSet)=mean(data.raw.VnY(end-Nmeasurements+1:end));
-            data.std.VnY(CurrentParameterSet)=std(data.raw.VnY(end-Nmeasurements+1:end));
-            data.VnR(CurrentParameterSet)=mean(data.raw.VnR(end-Nmeasurements+1:end));
-            data.std.VnR(CurrentParameterSet)=std(data.raw.VnR(end-Nmeasurements+1:end));
-            data.VnTH(CurrentParameterSet)=mean(data.raw.VnTH(end-Nmeasurements+1:end));
-            data.std.VnTH(CurrentParameterSet)=std(data.raw.VnTH(end-Nmeasurements+1:end));
-            CurrentParameterSet=CurrentParameterSet+1;
+            %Recond the time
+            CurrentTime=clock;
             
-            %plot
-            %figure(91);xlabel('CryoCon Temperature (K)');ylabel('Resistance (Ohm)');
-            %plot(data.ave.CryoT,data.ave.VsdX*1E8);
-            %if mod(CurrentParameterSet,1)==0
-            %    figure(92);
-            %    plot(data.SA.freq/1E6,data.SA.spectrum);
-            %end
+            %do some calulations
+            R=VsdR*Rex/(Vex-VsdR);
+            
+            %add results into "data"
+            data.raw.time(T_n,Vg_n,n)=round(etime(CurrentTime,StartTime)*100)/100;
+            data.raw.CryoT(T_n,Vg_n,n)=CurrentTemp;
+            data.raw.Vg(T_n,Vg_n,n)=CurrentVg;
+            data.raw.Vex(T_n,Vg_n,n)=Vex;
+            data.raw.VsdX(T_n,Vg_n,n)=VsdX;
+            data.raw.VsdY(T_n,Vg_n,n)=VsdY;
+            data.raw.VsdR(T_n,Vg_n,n)=VsdR;
+            data.raw.VsdTH(T_n,Vg_n,n)=VsdTH;
+            data.raw.R(T_n,Vg_n,n)=R;
+            data.raw.VnX(T_n,Vg_n,n)=VnX;
+            data.raw.VnY(T_n,Vg_n,n)=VnY;
+            data.raw.VnR(T_n,Vg_n,n)=VnR;
+            data.raw.VnTH(T_n,Vg_n,n)=VnTH;
+            
+            %save results to file
+            tmp=[CurrentTemp,CurrentVg,Vex,VsdX,VsdY,VnX,VnY,R,];
+            FilePtr = fopen(fullfile(start_dir, FileName), 'a');
+            fprintf(FilePtr,'%s\t',datestr(CurrentTime,'HH:MM:SS'));
+            fprintf(FilePtr,'%g\t%g\t%g\t%g\t%g\t%g\t%g\r\n',tmp);
+            fclose(FilePtr);
             
             
         end
+        
+        
+        
+        %calculate averages and standard deviation for parameter set
+        data.CryoT(T_n,Vg_n)=mean(data.raw.CryoT(T_n,Vg_n,:));
+        data.std.CryoT(T_n,Vg_n)=std(data.raw.CryoT(T_n,Vg_n,:));
+        data.Vg(T_n,Vg_n)=mean(data.raw.Vg(T_n,Vg_n,:));
+        data.Vex(T_n,Vg_n)=mean(data.raw.Vex(T_n,Vg_n,:));
+        
+        data.VsdX(T_n,Vg_n)=mean(data.raw.VsdX(T_n,Vg_n,:));
+        data.std.VsdX(T_n,Vg_n)=std(data.raw.VsdX(T_n,Vg_n,:));
+        data.VsdY(T_n,Vg_n)=mean(data.raw.VsdY(T_n,Vg_n,:));
+        data.std.VsdY(T_n,Vg_n)=std(data.raw.VsdY(T_n,Vg_n,:));
+        data.VsdR(T_n,Vg_n)=mean(data.raw.VsdR(T_n,Vg_n,:));
+        data.std.VsdR(T_n,Vg_n)=std(data.raw.VsdR(T_n,Vg_n,:));
+        data.VsdTH(T_n,Vg_n)=mean(data.raw.VsdTH(T_n,Vg_n,:));
+        data.std.VsdTH(T_n,Vg_n)=std(data.raw.VsdTH(T_n,Vg_n,:));
+        
+        data.VnX(T_n,Vg_n)=mean(data.raw.VnX(T_n,Vg_n,:));
+        data.std.VnX(T_n,Vg_n)=std(data.raw.VnX(T_n,Vg_n,:));
+        data.VnY(T_n,Vg_n)=mean(data.raw.VnY(T_n,Vg_n,:));
+        data.std.VnY(T_n,Vg_n)=std(data.raw.VnY(T_n,Vg_n,:));
+        data.VnR(T_n,Vg_n)=mean(data.raw.VnR(T_n,Vg_n,:));
+        data.std.VnR(T_n,Vg_n)=std(data.raw.VnR(T_n,Vg_n,:));
+        data.VnTH(T_n,Vg_n)=mean(data.raw.VnTH(T_n,Vg_n,:));
+        data.std.VnTH(T_n,Vg_n)=std(data.raw.VnTH(T_n,Vg_n,:));
+        
+        data.R(T_n,Vg_n)=mean(data.raw.R(T_n,Vg_n,:));
+        data.std.R(T_n,Vg_n)=std(data.raw.R(T_n,Vg_n,:));
+        
+        %plot
+        %figure(91);xlabel('CryoCon Temperature (K)');ylabel('Resistance (Ohm)');
+        %plot(data.ave.CryoT,data.ave.VsdX*1E8);
+        %if mod(CurrentParameterSet,1)==0
+        %    figure(92);
+        %    plot(data.SA.freq/1E6,data.SA.spectrum);
+        %end
+        
         %Record Spectrum
         if Spectrum=='Y'
             [freq, amp]=SA.downloadTrace();
-            data.SA.spectrum(CurrentSpectrumSet,:)=amp;
+            data.SA.spectrum(T_n,Vg_n,:)=amp;
         end
         %record VNA
         if Vector=='Y'
@@ -271,12 +261,10 @@ for T_n = 1:length(T_Array)
             [freq,S11]=VNA.getTrace();
             VNA.output='off';
             pause(VNAwaitTime);
-            data.VNA.S11(CurrentSpectrumSet,:)=S11;
+            data.VNA.S11(T_n,Vg_n,:)=S11;
+            data.VNA.S11_LogMag(T_n,Vg_n,:)=10*log10(abs(S11).^2);
         end
-        %increment the spectrum number index
-        if Vector || Spectrum=='Y'
-            CurrentSpectrumSet=CurrentSpectrumSet+1;
-        end
+        
     end
 end
 

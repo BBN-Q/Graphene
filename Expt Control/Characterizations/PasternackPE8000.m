@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -21,7 +21,7 @@ end
 base_path = 'C:\Users\qlab\Documents\data\Graphene data\PE8000 Characterization\';
 cd(base_path)
 % addpath([ base_path,'data'],'-END');
-filename = 'PasternackPE8000_10MHz_v1.txt';
+filename = 'PasternackPE8000_500MHz_v1.txt';
 data = fopen(filename,'w');
 pause on;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -41,6 +41,7 @@ startPower = -20; % in dBm
 endPower = 20; % in dBm
 PowerArray = startPower:1:endPower;
 pauseTime = 2;
+attn = 30;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -50,9 +51,9 @@ for j=1:length(PowerArray)
     sigGen.power = PowerArray(j);
     pause(pauseTime);
     Result = DVM.get();
-    PowerArray_W(j) = 0.001*10^(PowerArray(j)*0.1);
+    PowerArray_W(j) = 0.001*10^((PowerArray(j)-attn)*0.1);
     Vdiode(j) = str2num(Result.value);
-    fprintf(data,'%d %e %e \r\n', PowerArray(j), PowerArray_W(j), Vdiode(j));
+    fprintf(data,'%d %e %e \r\n', PowerArray(j)-40, PowerArray_W(j), Vdiode(j));
 end
 sigGen.power = -20;
 figure; plot(PowerArray_W, Vdiode, 'd'); grid on;

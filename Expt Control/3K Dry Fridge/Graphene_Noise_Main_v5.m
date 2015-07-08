@@ -87,6 +87,8 @@ TC = deviceDrivers.CryoCon22();
 VG = deviceDrivers.YokoGS200();
 LA1 = deviceDrivers.SRS830();
 LA2 = deviceDrivers.SRS830();
+LA3 = deviceDrivers.SRS830();
+
 if Spectrum=='Y'
     SA = deviceDrivers.HP71000();
 end
@@ -98,6 +100,7 @@ TC.connect('12');
 VG.connect('1');
 LA1.connect('7');
 LA2.connect('8');
+LA3.connect('9');
 if Spectrum=='Y'
     SA.connect('18');
 end
@@ -140,28 +143,6 @@ pause on;
 figure(91);clf;
 
 Vex_Array=initial_Vex_Array;
-%Vex_Array=InitialVex*ones(size(Vg_Array));
-%create multiple temperature loops per T. 3 for the first and 2 for the
-%rest
-%T_tmp=T_Array(1)*ones(1,length(T_Array)*2+1);
-%gain_tmp=ones(length(T_Array)*2+1,length(Vg_Array));
-%gain_tmp(1,:)=gain_matrix(1,:);
-%for j=1:length(T_Array)
-%    T_tmp(2*j)=T_Array(j);
-%    T_tmp(2*j+1)=T_Array(j);
-%    gain_tmp(2*j,:)=gain_matrix(j,:);
-%    gain_tmp(2*j+1,:)=gain_matrix(j,:);
-%end
-%T_tmp=ones(1,length(T_Array)*NTempPoints);
-%gain_tmp=ones(length(T_Array)*NTempPoints,length(Vg_Array));
-%for j=1:length(T_Array)
-%    for k=0:NTempPoints-1
-%    T_tmp(j*NTempPoints+k-NTempPoints+1)=T_Array(j);
-%    gain_tmp(j*NTempPoints+k-NTempPoints+1,:)=gain_matrix(j,:);
-%    end
-%end
-%T_Array=T_tmp;
-%gain_matrix=gain_tmp;
 data.gain_matrix=gain_matrix;
 
 
@@ -250,6 +231,10 @@ for T_n = 1:length(T_Array)
                 
                 [VnX,VnY,VnR,VnTH]=LA2.get_signal2();
                 
+                %Record 3 omega signal
+                
+                [V3wX,V3wY,V3wR,V3wTH]=LA3.get_signal2();
+                
                 %Recond the time
                 CurrentTime=clock;
                 
@@ -273,15 +258,19 @@ for T_n = 1:length(T_Array)
                 data.raw.VnY(T_n,Vg_n,TempPoints_n,n)=VnY;
                 data.raw.VnR(T_n,Vg_n,TempPoints_n,n)=VnR;
                 data.raw.VnTH(T_n,Vg_n,TempPoints_n,n)=VnTH;
+                data.raw.V3wX(T_n,Vg_n,TempPoints_n,n)=VnX;
+                data.raw.V3wY(T_n,Vg_n,TempPoints_n,n)=VnY;
+                data.raw.V3wR(T_n,Vg_n,TempPoints_n,n)=VnR;
+                data.raw.V3wTH(T_n,Vg_n,TempPoints_n,n)=VnTH;
                 data.raw.T_p2p(T_n,Vg_n,TempPoints_n,n)=T_p2p;
                 data.raw.P_p2p(T_n,Vg_n,TempPoints_n,n)=P_p2p;
                 data.raw.G(T_n,Vg_n,TempPoints_n,n)=G;
                 
                 %save results to file
-                tmp=[CurrentTemp,CurrentVg,CurrentVex,VsdX,VsdY,VnX,VnY,R,T_p2p,P_p2p,G];
+                tmp=[CurrentTemp,CurrentVg,CurrentVex,VsdX,VsdY,VnX,VnY,V3wX,V3wY,R,T_p2p,P_p2p,G];
                 FilePtr = fopen(fullfile(start_dir, FileName), 'a');
                 fprintf(FilePtr,'%s\t',datestr(CurrentTime,'HH:MM:SS'));
-                fprintf(FilePtr,'%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\r\n',tmp);
+                fprintf(FilePtr,'%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\r\n',tmp);
                 fclose(FilePtr);
                 
                 
@@ -312,6 +301,15 @@ for T_n = 1:length(T_Array)
             data.std.Vn.R(T_n,Vg_n,TempPoints_n)=std(data.raw.VnR(T_n,Vg_n,TempPoints_n,:));
             data.Vn.TH(T_n,Vg_n,TempPoints_n)=mean(data.raw.VnTH(T_n,Vg_n,TempPoints_n,:));
             data.std.Vn.TH(T_n,Vg_n,TempPoints_n)=std(data.raw.VnTH(T_n,Vg_n,TempPoints_n,:));
+            
+            data.V3w.X(T_n,Vg_n,TempPoints_n)=mean(data.raw.V3wX(T_n,Vg_n,TempPoints_n,:));
+            data.std.V3w.X(T_n,Vg_n,TempPoints_n)=std(data.raw.V3wX(T_n,Vg_n,TempPoints_n,:));
+            data.V3w.Y(T_n,Vg_n,TempPoints_n)=mean(data.raw.V3wY(T_n,Vg_n,TempPoints_n,:));
+            data.std.V3w.Y(T_n,Vg_n,TempPoints_n)=std(data.raw.V3wY(T_n,Vg_n,TempPoints_n,:));
+            data.V3w.R(T_n,Vg_n,TempPoints_n)=mean(data.raw.V3wR(T_n,Vg_n,TempPoints_n,:));
+            data.std.V3w.R(T_n,Vg_n,TempPoints_n)=std(data.raw.V3wR(T_n,Vg_n,TempPoints_n,:));
+            data.V3w.TH(T_n,Vg_n,TempPoints_n)=mean(data.raw.V3wTH(T_n,Vg_n,TempPoints_n,:));
+            data.std.V3w.TH(T_n,Vg_n,TempPoints_n)=std(data.raw.V3wTH(T_n,Vg_n,TempPoints_n,:));
             
             data.T_p2p(T_n,Vg_n,TempPoints_n)=mean(data.raw.T_p2p(T_n,Vg_n,TempPoints_n,:));
             data.std.T_p2p(T_n,Vg_n,TempPoints_n)=std(data.raw.T_p2p(T_n,Vg_n,TempPoints_n,:));
@@ -345,7 +343,7 @@ for T_n = 1:length(T_Array)
         save(fullfile(start_dir, FileName2),'data');
         
         %plot
-        figure(91);hold all;xlabel('Gate Voltage [V]');ylabel('Mean Temperature Rise [K]')
+        figure(90);hold all;xlabel('Gate Voltage [V]');ylabel('Mean Temperature Rise [K]')
         plot(data.Vg(end,:,TempPoints_n),data.T_p2p(end,:,TempPoints_n));
         
         %use measured T to set next guess close to Tset

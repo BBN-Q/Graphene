@@ -2,13 +2,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%     What and hOw?      %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Differential resistance measurement for Josephson junction
-% with Lockin measuring resistance and Yoko providing dc bias
+% with Lockin measuring resistance and Keithley providing dc bias
 % Created in June 2015 by KC Fong and Evan
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%     CLEAR  and INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function Diff_IV_data = Diff_IV_v1()
+function Diff_IV_data = Diff_IV_v1_K()
 temp = instrfind;
 if ~isempty(temp)
     fclose(temp)
@@ -19,11 +19,10 @@ clear Diff_IV_data;
 fclose all;
 
 % Connect to the Cryo-Con 22 temperature controler
-Keithley=deviceDrivers.
-Yoko = deviceDrivers.YokoGS200();
-Yoko.connect('2');
+Keithley=deviceDrivers.Keithley2400();
+Keithley.connect('24');
 Lockin = deviceDrivers.SRS830();
-Lockin.connect('7');
+Lockin.connect('8');
 
 % Initialize variables
 % DataInterval = input('Time interval in temperature readout (in second) = ');
@@ -51,8 +50,8 @@ WaitTime = 5*Lockin.timeConstant();
 
 figure; pause on;
 for j = 1:TotalStep
-    SetVolt = (j-1)*abs(StepDCVoltage) - abs(StartDCVoltage);
-    Yoko.value = SetVolt;
+    SetVolt = (j-1)*StepDCVoltage + StartDCVoltage;
+    Keithley.value = SetVolt;
     if j == 1
         pause(WaitTime + 10);
     else pause(WaitTime);
@@ -63,11 +62,23 @@ for j = 1:TotalStep
     fclose(FilePtr);
     clf; plot(Diff_IV_data(:,1)/LoadResistor, Diff_IV_data(:,2)/(LockinExcitVolt/LoadResistor)); grid on; xlabel('Current (A)'); ylabel('dV/dI (Ohm)'); title(strcat('Diff IV measurement for Josephson junction, start date and time: ', datestr(StartTime)));
 end
-Yoko.value = 0;
+for j = 1:TotalStep
+    SetVolt = (TotalStep-j)*StepDCVoltage - StartDCVoltage;
+    Keithley.value = SetVolt;
+    pause(WaitTime);
+    Diff_IV_data(j+TotalStep,:) = [SetVolt Lockin.X() Lockin.Y()];
+    FilePtr = fopen(fullfile(start_dir, FileName), 'a');
+    fprintf(FilePtr,'%e\t%e\t%e\r\n',Diff_IV_data(j+TotalStep,:));
+    fclose(FilePtr);
+    clf; plot(Diff_IV_data(:,1)/LoadResistor, Diff_IV_data(:,2)/(LockinExcitVolt/LoadResistor)); grid on; xlabel('Current (A)'); ylabel('dV/dI (Ohm)'); title(strcat('Diff IV measurement for Josephson junction, start date and time: ', datestr(StartTime)));
+end
+Keithley.value = 0;
 pause off;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%       Clear     %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Yoko.disconnect(); Lockin.disconnect();
-clear SetVolt, Yoko, Lockin;
+Keithley.disconnect(); Lockin.disconnect();
+clear SetVolt;
+clear Keithley;
+clear Lockin;

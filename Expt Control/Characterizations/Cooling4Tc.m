@@ -23,18 +23,18 @@ fclose all;
 TC = deviceDrivers.CryoCon22();
 TC.connect('12');
 Lockin = deviceDrivers.SRS830();
-Lockin.connect('7');
+Lockin.connect('8');
 
 % Initialize variables
 DataInterval = input('Time interval in temperature readout (in second) = ');
 start_dir = 'C:\Users\qlab\Documents\Graphene Data\3K Fridge CoolLog Repository\';
-start_dir = uigetdir(start_dir);
+start_dir = pwd;
 StartTime = clock;
-FileName = strcat('CoolLog_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.dat');
-FilePtr = fopen(fullfile(start_dir, FileName), 'w');
-fprintf(FilePtr, strcat(datestr(StartTime), ' CoolLog using CryoCon\r\n'));
-fprintf(FilePtr,'Time_s\tTemperature_K\tLockinX\tLockinY\r\n');
-fclose(FilePtr);
+FileName = strcat('Cool4Tc_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat');
+%FilePtr = fopen(fullfile(start_dir, FileName), 'w');
+%fprintf(FilePtr, strcat(datestr(StartTime), ' CoolLog using CryoCon\r\n'));
+%fprintf(FilePtr,'Time_s\tTemperature_K\tLockinX\tLockinY\r\n');
+%fclose(FilePtr);
 
 % temperature log loop
 j=1;
@@ -42,9 +42,10 @@ figure; pause on;
 while true
     CoolLogData(j,:) = [etime(clock, StartTime) TC.temperatureA() Lockin.X() Lockin.Y()];
     pause(DataInterval);
-    FilePtr = fopen(fullfile(start_dir, FileName), 'a');
-    fprintf(FilePtr,'%0.3f\t%e\t%e\t%e\r\n',CoolLogData(j,:));
-    fclose(FilePtr);
+    %FilePtr = fopen(fullfile(start_dir, FileName), 'a');
+    %fprintf(FilePtr,'%0.3f\t%e\t%e\t%e\r\n',CoolLogData(j,:));
+    %fclose(FilePtr);
+    save(FileName);
     clf; plot(CoolLogData(:,2), CoolLogData(:,3)); grid on; ylabel('Lockin X (V)'); xlabel('Temperature (K)'); title(strcat('Cooling for Tc, start date and time: ', datestr(StartTime)));
     j = j+1;
 end

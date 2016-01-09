@@ -2,7 +2,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%     What and hOw?      %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Differential resistance measurement for Josephson junction
-% with SR830 measuring resistance and Tek AFG providing dc bias
+% with SR865 measuring resistance and providing dc bias
 % Includes Gate Voltage Provided by Yoko GS200
 % Modified in November 2015 by Evan Walsh
 % Created in June 2015 by KC Fong and Evan Walsh

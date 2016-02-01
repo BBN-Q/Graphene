@@ -6,17 +6,13 @@
 % Edited in July 2015 by Evan Walsh
 % Version 1.0 Created in August 2014 by Jess Crossno
 % Using:
-%   CryoCon22 as Temperature Tontrol (TC)
 %   K2400 as Gate Voltage Source (VG)
 %   SRS865 #1 as excitation current and resistance monitor (LA1)
-%   SRS830 #2 as Noise/Temperature monitor at 2f (LA2)
 %
 %function takes in a temperature array (K), gate voltage array (V), and excitation
 %voltage array (V) then sweeps them. Basic structure is:
 %
-%VNA and SA commented out
-%
-%For each T, sweep VG. For each VG, sweep Vex
+% Sweep VG. For each VG, sweep Vex
 %
 %Vsd is the volatage drop measured across the graphene
 %
@@ -49,17 +45,12 @@ EndingVg = 0;
 
 % Connect to the all the various devices
 VG = deviceDrivers.Keithley2400();
-LA1 = deviceDrivers.SRS865();
-
-
-LA1.connect('10');
 VG.connect('24')
-
-
-
+LA1 = deviceDrivers.SRS865();
+LA1.connect('9');
 
 %saftey checks
-Vg_max = 32; %max absolute gate voltage
+Vg_max = 20; %max absolute gate voltage
 
 if max(abs(Vg_Array))>Vg_max
     error('Gate voltage is set above Vg_max')
@@ -111,7 +102,7 @@ for Vg_n = 1:length(Vg_Array)
             end
         end
         
-        %Recond the time
+        %Record the time
         CurrentTime=clock;
         
         %add results into "data"
@@ -159,13 +150,13 @@ for Vg_n = 1:length(Vg_Array)
     xlabel('Gate Voltage (V)');ylabel('Source-Drain Voltage (uV)');
 end
 toc;
-Vg_n=0;
-while CurrentVg ~= EndingVg
-    Vg_n=Vg_n+1;
-    CurrentVg=Vg_Array(length(Vg_Array)+1-Vg_n);
-    VG.value=CurrentVg;
-    pause(.5);
-end
+% Vg_n=0;
+% while CurrentVg ~= EndingVg
+%     Vg_n=Vg_n+1;
+%     CurrentVg=Vg_Array(length(Vg_Array)+1-Vg_n);
+%     VG.value=CurrentVg;
+%     pause(.5);
+% end
 
 %clean things up
 

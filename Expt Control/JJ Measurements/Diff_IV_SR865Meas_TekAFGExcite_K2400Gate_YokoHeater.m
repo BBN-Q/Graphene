@@ -65,7 +65,7 @@ prompt = 'What is the step gate voltage (V)? ';
 StepGate = input(prompt);
 prompt = 'What is the gate wait time (s)? ';
 GateWait = input(prompt);
-GateSteps=(EndGate-StartGate)/StepGate+1;
+[V_Gate_Array, GateSteps]=V_Array(StartGate,EndGate,StepGate);
 
 prompt = 'What is the heater resistor (Ohm)? ';
 HeaterResistor = input(prompt);
@@ -79,13 +79,12 @@ prompt = 'What is the heat wait time (s)? ';
 HeatWait = input(prompt);
 HeatSteps=(EndHeat-StartHeat)/StepHeat+1;
 
-Diff_IV_data=struct('V_Gate_Array',[],'V_Heat_Array',[],'JJCurr_Array',[],'LockInX',[],'LockInY',[],'LockInR',[],'LockInTH',[],'AFG_Excite_Volt',AFGExcitVolt,'AFG_Load_Resistor',LoadResistor,'LockIn_Time_Constant',Lockin.timeConstant(),'Measurement_Wait_Time',WaitTime,'Heater_Resistor',HeaterResistor);
+Diff_IV_data=struct('V_Gate_Array',V_Gate_Array,'V_Heat_Array',[],'JJCurr_Array',[],'LockInX',[],'LockInY',[],'LockInR',[],'LockInTH',[],'AFG_Excite_Volt',AFGExcitVolt,'AFG_Load_Resistor',LoadResistor,'LockIn_Time_Constant',Lockin.timeConstant(),'Measurement_Wait_Time',WaitTime,'Heater_Resistor',HeaterResistor);
 
 figure; pause on;
 for i=1:GateSteps
     SetGate = (i-1)*StepGate + StartGate;
     K2400.value=SetGate;
-    Diff_IV_data.V_Gate_Array(i)=SetGate;
     pause(GateWait);
     
     for k=1:HeatSteps

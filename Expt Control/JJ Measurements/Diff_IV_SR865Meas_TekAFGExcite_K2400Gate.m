@@ -22,7 +22,7 @@ fclose all;
 
 % Connect to the Cryo-Con 22 temperature controler
 Lockin = deviceDrivers.SRS865();
-Lockin.connect('10');
+Lockin.connect('9');
 K2400=deviceDrivers.Keithley2400;
 K2400.connect('24');
 AFG = deviceDrivers.TekAFG3102;

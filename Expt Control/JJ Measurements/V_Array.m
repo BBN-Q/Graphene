@@ -1,6 +1,6 @@
 function [V_Array, TotalSteps] = V_Array(V_Start, V_End, V_Step,flag)
 %Takes a start, end, and step voltage and gives the corresponding array of
-%voltage values. V_Step is unsigned. If varargin=0, one way trip. If varargin=1,
+%voltage values. V_Step is unsigned. If flag=0, one way trip. If flag=1,
 %round trip.
 
 if V_End>V_Start

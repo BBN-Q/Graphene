@@ -9,20 +9,24 @@ Vthresh=JJ_switch_data.Vthresh;
 
 bins=floor(time(end)/timeInterval); %number of bins - ignore leftover data
 
-StatsFromJJSwitch=struct('avg_countsperbin',[],'std_countsperbin',[],'var_countsperbin',[],'countsperbin',zeros(1,bins),'bin_times',timeInterval:timeInterval:bins*timeInterval);
+StatsFromJJSwitch=struct('avg_countsperbin',[],'std_countsperbin',[],'var_countsperbin',[],'countsperbin',zeros(1,bins),'bin_times',timeInterval:timeInterval:bins*timeInterval,'peaks_time',[],'peaks_volt',[],'total_counts',[]);
 
 bin_idx=1; %initialize bin index
+peak_idx=1; %initialize peak index
 j=2; %Ignore first data point
 for i=1:bins
     while time(j)<i*timeInterval
         if VJJ(j)>Vthresh %&& VJJ(j-1)<=Vthresh %Include to ignore counts that occur twice in a row
             StatsFromJJSwitch.countsperbin(bin_idx)=StatsFromJJSwitch.countsperbin(bin_idx)+1;
+            StatsFromJJSwitch.peaks_time(peak_idx)=time(j);
+            StatsFromJJSwitch.peaks_volt(peak_idx)=VJJ(j);
+            peak_idx=peak_idx+1;
         end
         j=j+1;
     end
     bin_idx=bin_idx+1;
 end
-
+StatsFromJJSwitch.total_counts=peak_idx-1;
 StatsFromJJSwitch.avg_countsperbin=mean(StatsFromJJSwitch.countsperbin);
 StatsFromJJSwitch.std_countsperbin=std(StatsFromJJSwitch.countsperbin);
 StatsFromJJSwitch.var_countsperbin=StatsFromJJSwitch.std_countsperbin.^2;

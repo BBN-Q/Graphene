@@ -8,16 +8,16 @@
 % 
 % Evan Walsh, January 2016 (evanwalsh@seas.harvard.edu)
 
-function JJ_switch_data=JJ_switch()
+function JJ_switch_data=JJ_switch_module(LoadResistor,Vb,WaitTime,RunTime,Vthresh,Vreset,ResetTime,VG,tag)
 
-temp = instrfind;
-if ~isempty(temp)
-    fclose(temp)
-    delete(temp)
-end
+% temp = instrfind;
+% if ~isempty(temp)
+%     fclose(temp)
+%     delete(temp)
+% end
 clear JJ_switch_data;
 %close all;
-fclose all;
+% fclose all;
 
 % Connect to Instruments
 KGate=deviceDrivers.Keithley2400();
@@ -28,28 +28,9 @@ Yoko=deviceDrivers.YokoGS200;
 Yoko.connect('2');
 
 StartTime = clock;
-FileName = strcat('VJJ_vs_Time_with_Switch_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat');
-
-% User Inputs
-prompt='What is the load resistor (ohm)? ';
-LoadResistor = input(prompt);
-prompt = 'What is the bias voltage (V)? ';
-Vb = input(prompt);
-prompt = 'What is the time per measurement (s)? ';
-WaitTime = input(prompt);
-prompt = 'What is the total run time (s)? ';
-RunTime = input(prompt);
-prompt = 'What is the threshold voltage (V)? ';
-Vthresh = input(prompt);
-prompt = 'What is the reset voltage (V)? ';
-Vreset = input(prompt);
-prompt = 'What is the reset time (s)? ';
-ResetTime=input(prompt);
-prompt = 'What is the gate voltage (V)? ';
-VG = input(prompt);
+FileName = strcat('VJJ_vs_Time_with_Switch_', datestr(StartTime, 'yyyymmdd_HHMMSS_'), tag,'.mat');
 
 JJ_switch_data = struct('Time',[],'VJJ',[],'Clicks',0,'VG',VG,'Ib',Vb/LoadResistor,'Ireset',Vreset/LoadResistor,'Vthresh',Vthresh);
-
 
 figure;
 pause on
@@ -78,6 +59,7 @@ while temp_time<RunTime
     %Save every 10 mins
     if save_flag+toc>600
         save(FileName,'JJ_switch_data')
+        save_flag=save_flag-600;
     end
 end
 %Final Save

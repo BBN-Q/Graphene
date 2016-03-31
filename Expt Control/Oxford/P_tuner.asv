@@ -1,0 +1,17 @@
+T_list=[3,5,10,15,20,25,30,25,40,45,50:10:250];
+TC = deviceDrivers.Lakeshore335();
+TC.connect('12')
+TC.rampRate = 0;
+TC.range1 = 0;
+
+for T_n=1:length(T_list);
+    T_set = T_list(T_n);
+    TC.setPoint1 = T_set;
+    if T_set < 10
+        TC.range = 1;
+    elseif T_set < 70
+        TC.range = 2;
+    elseif T_set <= 31
+        TC.range = 3;
+    else
+        sprintf('error: t

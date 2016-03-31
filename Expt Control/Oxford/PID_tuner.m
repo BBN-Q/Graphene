@@ -1,5 +1,6 @@
 clear T_list T_n T_set TC 
-T_list=[2,3,4,5,6,7,8,10,15,20,25,30,25,40,45,50:10:250];
+%T_list=[2,3,4,5,6,7,8,10,15,20,25,30,25,40,45,50:10:250];
+T_list=[70:10:250];
 TC = deviceDrivers.Lakeshore335();
 TC.connect('12')
 TC.rampRate1 = 0;

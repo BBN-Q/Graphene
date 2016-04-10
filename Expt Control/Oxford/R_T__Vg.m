@@ -43,9 +43,6 @@ function data = R_T__Vg(Vg_list)
 % Connect to the Cryo-Con 22 temperature controler
 TC = deviceDrivers.Lakeshore335();
 TC.connect('12');
-% Connect to the VNA
-VNA = deviceDrivers.AgilentE8363C();
-VNA.connect('140.247.189.60')
 %Connect lockin amplifier
 LA = deviceDrivers.SRS830();
 LA.connect('8')
@@ -55,12 +52,11 @@ VG.connect('17')
 
 
 %saftey checks (more checks below)
-assert(max(abs(Vg_list)) < 30,'Gate voltage set above 30 V');
+assert(max(abs(Vg_list)) <= 32,'Gate voltage set above 30 V');
 
 
 %get experiment parameters from user
-Rex = 1E7; % resistor in series with sample for resistance measurements
-VNAWaitTime = 1;
+Rex = 9.79E6; % resistor in series with sample for resistance measurements
 Nmeasurements = input('How many measurements per parameter point? ');
 VWaitTime1 = input('Enter initial Vg equilibration time: ');
 VWaitTime2 = input('Enter Vg equilibration time for each step: ');
@@ -77,25 +73,18 @@ aditional_info = input('Any additional info to include with file? ','s');
 start_dir = 'C:\Crossno\data\';
 start_dir = uigetdir(start_dir);
 StartTime = clock;
-FileName = strcat('VNA_R_T__Vg_', datestr(StartTime, 'yyyymmdd_HHMMSS'),'_',UniqueName,'.mat');
+FileName = strcat('R_T__Vg_', datestr(StartTime, 'yyyymmdd_HHMMSS'),'_',UniqueName,'.mat');
 
 data = struct('time',[],'tempVapor',[],'tempProbe',[],'LA_X',[],'LA_Y',[], ...
     'R',[],'Vg',[],'LA',struct('Vex', Vex,'Rex',Rex,'timeConstant',LA.timeConstant()) ...
     ,'info',aditional_info);
-data.VNA=struct('time',[],'tempVapor',[],'tempProbe',[],'traces',[],'R',[],'Vg',[]);
 
 
 %never go longer than saveTime without saving
 saveTime = 60; %in seconds
 lastSave = clock;
 
-%initialize equip
-LA.sineAmp=Vex;
-VNA.output = 'off';
-pause(VNAWaitTime);
-
 %initilze data counter
-slow_n = 1;
 pause on;
 %main loop
 for Vg_n=1:length(Vg_list)
@@ -134,7 +123,6 @@ pause off;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 VG.ramp2V(0);
 TC.disconnect();
-VNA.disconnect();
 LA.disconnect();
-clear TC VNA LA MS
+clear TC LA MS
 end

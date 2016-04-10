@@ -7,12 +7,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function data = VNA_R_T__T_B_Vg(T_list,B_list,Vg_list)
+function data = Noise_SA_R_T__T_B_Vg(T_list,B_list,Vg_list)
 %%
 %Internal convenience functions: plotting and data taking
-    function plotVNA(i,j,k)
-        figure(991); xlabel('Frequency (MHz)');ylabel('S11^2'); hold all; grid on;
-        plot(data.freq*1E-6,squeeze(20*log10(abs(data.traces(i,j,k,:)))));
+    function plotSA(i,j,k)
+        figure(991); xlabel('Frequency (MHz)');ylabel('dBm'); hold all; grid on;
+        plot(data.freq*1E-6,squeeze(data.traces(i,j,k,:)));
     end
     function plotLog()
         figure(992); clf; grid on; hold on; xlabel('time (s)');
@@ -42,6 +42,7 @@ function data = VNA_R_T__T_B_Vg(T_list,B_list,Vg_list)
             data.raw.field(i,j,k,n) = MS.measuredField();
             pause(measurementWaitTime)
             [data.raw.LA_X(i,j,k,n) data.raw.LA_Y(i,j,k,n)] = LA.snapXY();
+            data.raw.noise(i,j,k,n) = MM.value();
             data.raw.R(i,j,k,n) = ...
                 sqrt(data.raw.LA_X(i,j,k,n)^2+data.raw.LA_Y(i,j,k,n)^2)*LA_Rex/LA_Vex;
         end
@@ -52,15 +53,14 @@ function data = VNA_R_T__T_B_Vg(T_list,B_list,Vg_list)
         data.LA_Y(i,j,k) = mean(data.raw.LA_Y(i,j,k,:));
         data.R(i,j,k) = mean(data.raw.R(i,j,k,:));
         data.field(i,j,k) = mean(data.raw.field(i,j,k,:));
+        data.noise(i,j,k) = mean(data.raw.noise(i,j,k,:));
         data.std.TVapor(i,j,k) = std(data.raw.TVapor(i,j,k,:));
         data.std.TProbe(i,j,k) = std(data.raw.TProbe(i,j,k,:));
         data.std.LA_X(i,j,k) = std(data.raw.LA_X(i,j,k,:));
         data.std.LA_Y(i,j,k) = std(data.raw.LA_Y(i,j,k,:));
         data.std.R(i,j,k) = std(data.raw.R(i,j,k,:));
         data.std.field(i,j,k) = std(data.raw.field(i,j,k,:));
-        VNA.trigger;
-        data.traces(i,j,k,:) = VNA.getSingleTrace();
-        pause(VNAwaitTime);
+        [tmp,data.traces(i,j,k,:)]= SA.SAGetTrace();
     end
 %keep a running track of all parameters vs time
     function timeLog()
@@ -131,9 +131,12 @@ function data = VNA_R_T__T_B_Vg(T_list,B_list,Vg_list)
 % Connect to the Cryo-Con 22 temperature controler
 TC = deviceDrivers.Lakeshore335();
 TC.connect('12');
-% Connect to the VNA
-VNA = deviceDrivers.AgilentE8363C();
-VNA.connect('140.247.189.97')
+% Connect to the SA
+VNA = deviceDrivers.AgilentN9020A;
+VNA.connect('140.247.189.131')
+% Connect to the multimeter
+MM = deviceDrivers.Keysight34401A();
+MM.connect('5');
 %Connect lockin amplifier
 LA = deviceDrivers.SRS830();
 LA.connect('8')
@@ -164,9 +167,9 @@ TvaporRampRate = 20;
 TprobeRampRate = 20;
 PID = [500,200,100];
 
-Nmeasurements = input('How many measurements per parameter point [10]? ');
+Nmeasurements = input('How many measurements per parameter point [20]? ');
 if isempty(Nmeasurements)
-    Nmeasurements = 10;
+    Nmeasurements = 20;
 end
 sweepRate = input('Enter magnet sweep rate (Tesla/min) [0.45] = ');
 if isempty(sweepRate)
@@ -175,22 +178,17 @@ end
 assert(isnumeric(sweepRate), 'Oops! need to set a sweep rate.');
 assert(abs(sweepRate) < MS.maxSweepRate,'sweep rate set too high!');
 
-VWaitTime1 = input('Enter initial Vg equilibration time [5]: ');
+VWaitTime1 = input('Enter initial Vg equilibration time [1]: ');
 if isempty(VWaitTime1)
-    VWaitTime1 = 5;
+    VWaitTime1 = 1;
 end
 VWaitTime2 = input('Enter Vg equilibration time for each step [1]: ');
 if isempty(VWaitTime2)
     VWaitTime2 = 1;
 end
-measurementWaitTime = input('Enter time between measurents [1.2]: ');
+measurementWaitTime = input('Enter time between measurents [0]: ');
 if isempty(measurementWaitTime)
-    measurementWaitTime = 1.2;
-end
-
-VNAwaitTime=input('Enter VNA wait time [2]: ');
-if isempty(VNAwaitTime)
-    VNAwaitTime = 2;
+    measurementWaitTime = 0;
 end
 
 UniqueName = input('Enter uniquie file identifier: ','s');
@@ -227,15 +225,10 @@ TC.rampRate1 = TvaporRampRate;
 TC.rampRate2 = TprobeRampRate;
 TC.PID1 = PID;
 TC.PID2 = PID;
-TC.setPoint1 = T_list(1)-1;
-TC.setPoint2 = T_list(1);
-TC.range1 = 1;
-TC.range2 = 1;
 
 %initialize magent
 MS.remoteMode();
 MS.sweepRate = sweepRate;
-MS.switchHeater = 1;
 
 %initialize Lockin
 LA.sineAmp = LA_Vex;
@@ -288,15 +281,19 @@ B_ns = 1:length(B_list);
 Vg_ns = 1:length(Vg_list);
 for T_n=T_ns
     T_set = T_list(T_n);
-    TC.setPoint1 = T_set-1;
-    TC.setPoint2 = T_set;
     if T_set <= 5.5        
         TC.range1 = 1;
+        TC.range2 = 1;
     elseif T_set <= 70        
-        TC.range1 = 2;        
+        TC.range1 = 2; 
+        TC.range2 = 2;  
     else
-        TC.range1 = 3;        
+        TC.range1 = 3;
+        TC.range2 = 3;
     end
+    TC.setPoint1 = T_set-1;
+    TC.setPoint2 = T_set;
+    
     stabilizeTemperature(T_set,5,0.3)
     
     
@@ -304,8 +301,10 @@ for T_n=T_ns
         
         %set target field
         field_set = B_list(B_n);
+        MS.switchHeater = 1;
         MS.targetField = field_set;
         MS.goToTargetField();
+        pause(timeLogInterval);
         timeLog();
         plotLog();
         
@@ -314,9 +313,9 @@ for T_n=T_ns
             timeLog();
             plotLog();
         end
-
+        MS.switchHeater = 0;
+        
         for Vg_n=Vg_ns
-            tic
             %set Vg
             Vg_set = Vg_list(Vg_n);
             VG.ramp2V(Vg_set);
@@ -336,11 +335,11 @@ for T_n=T_ns
             plotVNA(T_n,B_n,Vg_n);
             %save
             saveData(T_n,B_n,Vg_n);
-            toc
         end
         plotResistanceLine(T_n,B_n);
         Vg_ns = fliplr(Vg_ns);
         B_ns = fliplr(B_ns);
+        figure(991);clf;
     end
 end
 pause off;
@@ -369,7 +368,7 @@ VNA.disconnect();
 LA.disconnect();
 MS.disconnect();
 VG.disconnect();
-clear TC VNA LA MS VG
+clear TC SA LA MS VG MM
 %% Email data
 if EmailJess || EmailKC == 'Y'
     setpref('Internet','E_mail','Sweet.Lady.Science@gmail.com');

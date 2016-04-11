@@ -1,13 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%     What and hOw?      %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Collect VNA, Resistance, and Temperature vs field and gate voltage
-% Created in Mar 2016 by Jesse Crossno
+% Collect Noise, Resistance, vs Temperature, field and gate voltage
+% Created in April 2016 by Jesse Crossno
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function data = Noise_R_T__T_B_Vg(T_list,B_list,Vg_list)
+function data = Noise_R__T_B_Vg(T_list,B_list,Vg_list)
 %%
 %Internal convenience functions: plotting and data taking
     function plotLog()
@@ -20,8 +20,8 @@ function data = Noise_R_T__T_B_Vg(T_list,B_list,Vg_list)
     function plotResistance(i)
         figure(993); clf; xlabel('Gate Voltage (V)');ylabel('Field (Tesla)');
         grid on; hold on;
-        h=surf(data.Vg,data.field_set,squeeze(data.R(i,:,:)));view(2);
-        set(h,'linestyle','none');colorbar;title('Resistance (\Omega)');
+        plt=surf(data.Vg,data.field_set,squeeze(data.R(i,:,:)));view(2);
+        set(plt,'linestyle','none');colorbar;title('Resistance (\Omega)');
     end
     function plotResistanceLine(i,j)
         figure(994); xlabel('Vg (volts)');ylabel('Resistance (\Omega)');
@@ -32,32 +32,27 @@ function data = Noise_R_T__T_B_Vg(T_list,B_list,Vg_list)
 %measures the data
     function measure_data(i,j,k)
         for n=1:Nmeasurements
-            data.raw.time(i,j,k,n) = etime(clock, StartTime);
-            data.raw.TVapor(i,j,k,n) = TC.temperatureA;
-            data.raw.TProbe(i,j,k,n) = TC.temperatureB;
-            data.raw.field(i,j,k,n) = MS.measuredField();
             pause(measurementWaitTime)
-            [data.raw.LA_X(i,j,k,n) data.raw.LA_Y(i,j,k,n)] = LA.snapXY();
-            data.raw.Vn(i,j,k,n) = MM.value();
+            data.raw.time(i,j,k,n) = etime(clock, StartTime);
+            [data.raw.Vsd_X(i,j,k,n) data.raw.Vsd_Y(i,j,k,n)] = LA.snapXY;
+            data.raw.Vn(i,j,k,n) = MM.value;
             data.raw.R(i,j,k,n) = ...
-                sqrt(data.raw.LA_X(i,j,k,n)^2+data.raw.LA_Y(i,j,k,n)^2)*LA_Rex/LA_Vex;
+                sqrt(data.raw.Vsd_X(i,j,k,n)^2+data.raw.Vsd_Y(i,j,k,n)^2)*LA_Rex/LA_Vex;
         end
+        data.field(i,j,k) = MS.measuredField;
+        data.TVapor(i,j,k) = TC.temperatureA;
+        data.TProbe(i,j,k) = TC.temperatureB;
+        
         data.time(i,j,k) = mean(data.raw.time(i,j,k,:));
-        data.TVapor(i,j,k) = mean(data.raw.TVapor(i,j,k,:));
-        data.TProbe(i,j,k) = mean(data.raw.TProbe(i,j,k,:));
-        data.LA_X(i,j,k) = mean(data.raw.LA_X(i,j,k,:));
-        data.LA_Y(i,j,k) = mean(data.raw.LA_Y(i,j,k,:));
+        data.Vsd_X(i,j,k) = mean(data.raw.Vsd_X(i,j,k,:));
+        data.Vsd_Y(i,j,k) = mean(data.raw.Vsd_Y(i,j,k,:));
         data.R(i,j,k) = mean(data.raw.R(i,j,k,:));
-        data.field(i,j,k) = mean(data.raw.field(i,j,k,:));
         data.Vn(i,j,k) = mean(data.raw.Vn(i,j,k,:));
-        data.std.TVapor(i,j,k) = std(data.raw.TVapor(i,j,k,:));
-        data.std.TProbe(i,j,k) = std(data.raw.TProbe(i,j,k,:));
-        data.std.LA_X(i,j,k) = std(data.raw.LA_X(i,j,k,:));
-        data.std.LA_Y(i,j,k) = std(data.raw.LA_Y(i,j,k,:));
+        
+        data.std.Vsd_X(i,j,k) = std(data.raw.Vsd_X(i,j,k,:));
+        data.std.Vsd_Y(i,j,k) = std(data.raw.Vsd_Y(i,j,k,:));
         data.std.R(i,j,k) = std(data.raw.R(i,j,k,:));
-        data.std.field(i,j,k) = std(data.raw.field(i,j,k,:));
-        data.Vn(i,j,k) = std(data.raw.Vn(i,j,k,:));
-        [tmp,data.traces(i,j,k,:)]= SA.SAGetTrace();
+        data.std.Vn(i,j,k) = std(data.raw.Vn(i,j,k,:));
     end
 %keep a running track of all parameters vs time
     function timeLog()
@@ -65,8 +60,9 @@ function data = Noise_R_T__T_B_Vg(T_list,B_list,Vg_list)
         data.log.TVapor = [data.log.TVapor TC.temperatureA];
         data.log.TProbe = [data.log.TProbe TC.temperatureB];
         [X Y] = LA.snapXY();
-        data.log.LA_X = [data.log.LA_X X];
-        data.log.LA_Y = [data.log.LA_Y Y];
+        data.log.Vsd_X = [data.log.Vsd_X X];
+        data.log.Vsd_Y = [data.log.Vsd_Y Y];
+        data.log.Vn = [data.log.Vn MM.value];
         data.log.R = [data.log.R sqrt(X^2+Y^2)*LA_Rex/LA_Vex];
         data.log.field = [data.log.field MS.measuredField()];
     end
@@ -86,20 +82,17 @@ function data = Noise_R_T__T_B_Vg(T_list,B_list,Vg_list)
         end
     end
 
-%measures the all variables including VNA
     function saveData(i,j,k)
-        save(fullfile(start_dir, FileName2),'data');
         FilePtr = fopen(fullfile(start_dir, FileName), 'a');
         tmp = [data.TProbe(i,j,k) data.TVapor(i,j,k) Vg_list(Vg_n)...
-            data.field(i,j,k) data.LA_X(i,j,k) data.LA_Y(i,j,k) data.R(i,j,k)];
-        fprintf(FilePtr,'%s\t',datestr(clock,'YYYY_mm_DD HH:MM:SS'));
-        fprintf(FilePtr,'%g\t%g\t%g\t%g\t%g\t%g\t%g',tmp);
-        for d=data.traces(i,j,k,:)
-            fprintf(FilePtr,'\t%s',num2str(d));
-        end
-        fprintf(FilePtr,'\r\n');
+            data.field(i,j,k) data.Vsd_X(i,j,k) data.Vsd_Y(i,j,k) data.R(i,j,k),...
+            data.Vn(i,j,k)];
+        fprintf(FilePtr,'%s,',datestr(clock,'YYYY/mm/DD HH:MM:SS'));
+        fprintf(FilePtr,'%g,%g,%g,%g,%g,%g,%g,%g\r\n',tmp);
         fclose(FilePtr);
-        
+    end
+    function saveMatFile()
+        save(fullfile(start_dir, FileName2),'data');
     end
     function checkLockinSensitivity(lowerBound,upperBound)
         if ~exist('lowerBound','var')
@@ -128,9 +121,6 @@ function data = Noise_R_T__T_B_Vg(T_list,B_list,Vg_list)
 % Connect to the Cryo-Con 22 temperature controler
 TC = deviceDrivers.Lakeshore335();
 TC.connect('12');
-% Connect to the SA
-VNA = deviceDrivers.AgilentN9020A;
-VNA.connect('140.247.189.131')
 % Connect to the multimeter
 MM = deviceDrivers.Keysight34401A();
 MM.connect('5');
@@ -202,11 +192,11 @@ AddInfo = input('Enter any additional info to include in file header: ','s');
 start_dir = 'C:\Crossno\data\';
 start_dir = uigetdir(start_dir);
 StartTime = clock;
-FileName = strcat('VNA_R_T__B_Vg', datestr(StartTime, 'yyyymmdd_HHMMSS'),'_',UniqueName,'.dat');
-FileName2 = strcat('VNA_R_T__B_Vg', datestr(StartTime, 'yyyymmdd_HHMMSS'),'_',UniqueName,'.mat');
+FileName = strcat('Noise_R__T_B_Vg', datestr(StartTime, 'yyyymmdd_HHMMSS'),'_',UniqueName,'.csv');
+FileName2 = strcat('Noise_R__T_B_Vg', datestr(StartTime, 'yyyymmdd_HHMMSS'),'_',UniqueName,'.mat');
 FilePtr = fopen(fullfile(start_dir, FileName), 'w');
 %create header string
-HeaderStr=strcat('Time\tTProbe(K)\tTVapor\tVg\tfield\tX\tY\tR');
+HeaderStr=strcat('Time,TProbe(K),TVapor,Vg,field,X,Y,R,Vn\r\n');
 fprintf(FilePtr, HeaderStr);
 fclose(FilePtr);
 
@@ -236,25 +226,12 @@ LA.inputCoupling = LA_coupling;
 LA.sens = LA_sens;
 LA.bufferRate = LA_bufferRate;
 
-%initialize VNA
-VNA.trigger_source = 'manual';
-freq = VNA.getX;
-
-%add freq to dat file as col names
-FilePtr = fopen(fullfile(start_dir, FileName), 'a');
-for f=freq
-    fprintf(FilePtr,'\t%e',f);
-end
-    fprintf(FilePtr,'\r\n');
-fclose(FilePtr);
 
 % Initialize data structure
 blank = zeros(length(T_list),length(B_list),length(Vg_list));
-trace_blank = zeros(length(T_list),length(B_list),length(Vg_list),length(freq));
-data = struct('time',blank,'TVapor',blank,'TProbe',blank,'LA_X',blank ...
-    ,'LA_Y',blank,'R',blank,'field',blank,'Vg',Vg_list,'field_set',B_list...
-    ,'traces',trace_blank,'freq',freq,'T_set',T_list);
-data.log = struct('time',[],'TVapor',[],'TProbe',[],'LA_X',[],'LA_Y',[],'R',[],'field',[]);
+data = struct('time',blank,'TVapor',blank,'TProbe',blank,'Vsd_X',blank,'Vsd_Y',blank,...
+    'R',blank,'field',blank,'Vn',blank,'Vg',Vg_list,'field_set',B_list,'T_set',T_list);
+data.log = struct('time',[],'TVapor',[],'TProbe',[],'Vsd_X',[],'Vsd_Y',[],'R',[],'field',[],'Vn',[]);
 
 %record all the unsed settings
 data.settings.TC.rampRate1 = TvaporRampRate;
@@ -272,10 +249,12 @@ data.settings.LA.bufferRate = LA_bufferRate;
 data.settings.MS.sweepRate = sweepRate;
 
 %% main loop
-%keep a running log of all measureables vs time
+pauseButton = createPauseButton;
+pause(0.01); % To create the button
 T_ns = 1:length(T_list);
 B_ns = 1:length(B_list);
 Vg_ns = 1:length(Vg_list);
+tic
 for T_n=T_ns
     T_set = T_list(T_n);
     if T_set <= 5.5        
@@ -288,7 +267,7 @@ for T_n=T_ns
         TC.range1 = 3;
         TC.range2 = 3;
     end
-    TC.setPoint1 = T_set-1;
+    TC.setPoint1 = max(T_set-1,1);
     TC.setPoint2 = T_set;
     
     stabilizeTemperature(T_set,5,0.3)
@@ -323,29 +302,27 @@ for T_n=T_ns
                 pause(VWaitTime2);
             end
             checkLockinSensitivity();
-            
             %take "fast" data
             measure_data(T_n,B_n,Vg_n);
-            
             %update plots
             plotResistance(T_n);
-            plotVNA(T_n,B_n,Vg_n);
             %save
             saveData(T_n,B_n,Vg_n);
         end
-        plotResistanceLine(T_n,B_n);
+        saveMatFile;
         Vg_ns = fliplr(Vg_ns);
         B_ns = fliplr(B_ns);
         figure(991);clf;
+        toc
     end
 end
-pause off;
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%     Ramp down and clear      %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-targetField = 0;
-MS.targetField = targetField;
+field_set = 0;
+MS.switchHeater = 1;
+MS.targetField = field_set;
 MS.goToTargetField();
 timeLog();
 TC.range1 = 0;
@@ -361,11 +338,12 @@ MS.switchHeater = 0;
 
 
 TC.disconnect();
-VNA.disconnect();
 LA.disconnect();
 MS.disconnect();
+MM.disconnect();
 VG.disconnect();
-clear TC SA LA MS VG MM
+close(pauseButton) 
+clear TC LA MS VG MM pauseButton
 %% Email data
 if EmailJess || EmailKC == 'Y'
     setpref('Internet','E_mail','Sweet.Lady.Science@gmail.com');

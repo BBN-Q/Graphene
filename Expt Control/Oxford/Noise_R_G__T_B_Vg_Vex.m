@@ -7,15 +7,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function data = Noise_R_G__T_B_Vg(T_list,B_list,Vg_list,gain_matrix,initial_Vex_list)
-if length(initial_Vex_list)==1
-    initial_Vex_list = initial_Vex_list*ones(1,length(Vg_list));
-end
-assert(length(initial_Vex_list)==length(Vg_list),'initial_Vex_Array must be the same length as Vg_list or a single number')
-s = size(gain_matrix);
-assert(length(s)==3,'gain matrix should be 3 dimensional');
-assert(s(1)==length(T_list)&&s(2)==length(B_list)&&s(3)==length(Vg_list),'gain matix dimensions do not allign with parameter list dimensions');
-clear s;
+function data = Noise_R_G__T_B_Vg_Vex(T_list,B_list,Vg_list,gain_array,Vex_list)
+
 %%
 %Internal convenience functions: plotting and data taking
     function plotLog()
@@ -32,12 +25,14 @@ clear s;
         set(plt,'linestyle','none');
         c = colorbar;ylabel(c,'Resistance (\Omega)');
     end
-    function plotNoise(i)
-        figure(993); clf; xlabel('Gate Voltage (V)');ylabel('Field (Tesla)');
+    function plotT_p2p(i,j,k)
+        figure(993); clf; xlabel('Heating Power (W_{p2p})');ylabel('\DeltaT_{p2p} (K)');
         grid on; hold on;
-        plt=surf(data.Vg,data.B_set,squeeze(data.Vn_mean(i,:,:)*1E6));view(2);
-        set(plt,'linestyle','none');
-        c = colorbar;ylabel(c,'Noise (\muV)');
+        last = find(data.T_p2p(i,j,k,:)==0,1)-1;
+        plot(squeeze(data.P_p2p(i,j,k,1:last)),squeeze(data.T_p2p(i,j,k,1:last)),'b.-','MarkerSize',20);view(2);
+        x = linspace(0,max(data.P_p2p(i,j,k,1:last))*1.1,50);
+        G = mean(data.G(i,j,k,1:last));
+        plot(x,x/G,'r--');
     end
     function plotNoiseDC(i)
         figure(993); clf; xlabel('Gate Voltage (V)');ylabel('Field (Tesla)');
@@ -53,7 +48,7 @@ clear s;
         set(plt,'linestyle','none');
         c = colorbar;ylabel(c,'Thermal Conductance (W/K)');
     end
-    function plotT_p2p()
+    function plotT_p2p_log()
         figure(995);clf;hold all;xlabel('time');ylabel('\DeltaT_{p2p}');
         s = size(data.time);
         len = s(1)*s(2)*s(3)*s(4);
@@ -89,7 +84,7 @@ clear s;
         data.R(i,j,k,m) = mean(data.raw.R(i,j,k,m,:));
         data.VnDC(i,j,k,m) = mean(data.raw.VnDC(i,j,k,m,:));
         
-        data.T_p2p(i,j,k,m)=2*sqrt(2)*data.Vn(i,j,k,m)/gain_matrix(i,j,k);
+        data.T_p2p(i,j,k,m)=2*sqrt(2)*data.Vn(i,j,k,m)/gain_array(i,j,k);
         data.P_p2p(i,j,k,m)=2*(data.Vsd(i,j,k,m)*data.Vsd(i,j,k,m))/data.R(i,j,k,m);
         data.G(i,j,k,m)=data.P_p2p(i,j,k,m)/data.T_p2p(i,j,k,m);
         
@@ -121,15 +116,15 @@ clear s;
 %run until temperature is stable around setpoint
     function stabilizeTemperature(setPoint,time,tolerance)
         %temperature should be with +- tolerance in K for time seconds
-        %Tmonitor = 999*ones(2,time*10);
         Tmonitor = 999*ones(1,time*10);
         n_mon = 0;
         %while max(max(Tmonitor))>tolerance
         while max(Tmonitor)>tolerance
-            %Tmonitor(1,mod(n_mon,time*10)+1)=abs(TC.temperatureA()-setPoint+1);
-            Tmonitor(1,mod(n_mon,time*10)+1)=abs(TC.temperatureB()-setPoint);
+            t1 = clock;
+            Tmonitor(mod(n_mon,time*10)+1)=abs(TC.temperatureB()-setPoint);
             n_mon=n_mon+1;
-            pause(0.095);
+            while etime(clock,t1) < 0.1
+            end
         end
     end
 
@@ -197,7 +192,7 @@ assert(max(abs(B_list)) < MS.maxField,'Target field exceeds limit set by magnet 
 timeLogInterval = 2; %time between timeLog measurments
 fieldRes = 0.001; %take data when measured field is within fieldRes of target field
 Vex_max = 5;
-LA1_Rex = 10E3; %resistor in series with sample
+LA1_Rex = 46E3; %resistor in series with sample
 LA1_Vex = 0.1; %initial sine amplitude
 LA1_phase = 0; %Phase to use on LA sine output
 LA1_freq = 17.777;
@@ -216,18 +211,12 @@ TvaporRampRate = 20;
 TprobeRampRate = 20;
 PID = [500,200,100];
 
-DeltaTset = input('Enter target delta T [2]: ');
-if isempty(DeltaTset)
-    DeltaTset = 2;
-end
+
 Nmeasurements = input('How many measurements per parameter point [15]? ');
 if isempty(Nmeasurements)
     Nmeasurements = 15;
 end
-Nruns = input('How many times would you like to sweep gate [2]? ');
-if isempty(Nruns)
-    Nruns = 2;
-end
+
 sweepRate = input('Enter magnet sweep rate (Tesla/min) [0.45] = ');
 if isempty(sweepRate)
     sweepRate = 0.45;
@@ -304,7 +293,7 @@ LA2.bufferRate = LA2_bufferRate;
 
 
 % Initialize data structure
-blank = zeros(length(T_list),length(B_list),length(Vg_list),Nruns);
+blank = zeros(length(T_list),length(B_list),length(Vg_list),length(Vex_list));
 blank2 = zeros(length(T_list),length(B_list),length(Vg_list));
 data = struct('time',blank,'T_set',T_list,'B_set',B_list,'Vg',Vg_list,...
     'TVapor',blank,'TProbe',blank,'Vn_X',blank,'Vn_Y',blank,'Vn',blank,'VnDC',blank,...
@@ -332,16 +321,16 @@ data.settings.LA2.inputCoupling = LA2_coupling;
 data.settings.LA2.sens = LA2_sens;
 data.settings.LA2.bufferRate = LA2_bufferRate;
 data.settings.MS.sweepRate = sweepRate;
-data.gain_matrix=gain_matrix;
+data.gain_array=gain_array;
 
-plotResistance(1);
-plotG(1)
-plotNoise(1);
-plotNoiseDC(1)
+%plotResistance(1);
+%plotG(1)
+%plotNoise(1);
+%plotNoiseDC(1)
 %% main loop
 pauseButton = createPauseButton;
+heliumUI = oxfordHeliumUI;
 pause(0.01); % To create the button
-Vex_Array=initial_Vex_list;
 T_ns = 1:length(T_list);
 B_ns = 1:length(B_list);
 Vg_ns = 1:length(Vg_list);
@@ -360,11 +349,8 @@ for T_n=T_ns
     end
     TC.setPoint1 = max(T_set-1,1);
     TC.setPoint2 = T_set;
-    
-    stabilizeTemperature(T_set,5,0.3)
-    
+
     for B_n=B_ns
-        
         %set target field
         B_set = B_list(B_n);
         MS.switchHeater = 1;
@@ -373,6 +359,9 @@ for T_n=T_ns
         pause(timeLogInterval);
         timeLog();
         plotLog();
+        if B_n==B_ns(1)
+            stabilizeTemperature(T_set,5,0.3)
+        end
         
         while abs(data.log.B(end) - B_set) > fieldRes
             pause(timeLogInterval);
@@ -381,42 +370,40 @@ for T_n=T_ns
         end
         MS.switchHeater = 0;
         
-        for run_n=1:Nruns
-            for Vg_n=Vg_ns
-                %set Vg
-                Vg_set = Vg_list(Vg_n);
-                VG.ramp2V(Vg_set);
-                t1 = clock;
-                if Vex_Array(Vg_n)>Vex_max
-                    Vex_Array(Vg_n)=Vex_max;
-                    disp('warning: excitation voltage hit upper limit');
+        for Vg_n=Vg_ns
+            %set Vg
+            Vg_set = Vg_list(Vg_n);
+            VG.ramp2V(Vg_set);
+            t1 = clock;
+            if Vex_list(Vg_n)>Vex_max
+                Vex_list(Vg_n)=Vex_max;
+            end
+            %round excitation current to the nearest 10mV with a 10mV min
+            if Vg_n==1
+                while etime(clock,t1)<VWaitTime1;
                 end
-                %round excitation current to the nearest 10mV with a 10mV min
-                LA1_Vex=max(0.01,round(100*Vex_Array(Vg_n))/100);
+            else
+                while etime(clock,t1)<VWaitTime2;
+                end
+            end
+            
+            for Vex_n=1:length(Vex_list)
+                LA1_Vex=max(0.01,round(100*Vex_list(Vex_n))/100);
                 LA1.sineAmp=LA1_Vex;
                 checkLockinSensitivity();
-                
-                if Vg_n==1
-                    while etime(clock,t1)<VWaitTime1;
-                    end
-                else
-                    while etime(clock,t1)<VWaitTime2;
-                    end
-                end
-                
-                
+
                 %take "fast" data
-                measure_data(T_n,B_n,Vg_n,run_n);
+                measure_data(T_n,B_n,Vg_n,Vex_n);
                 %save
-                saveData(T_n,B_n,Vg_n,run_n);
-                %update plots
-                plotT_p2p;
+                saveData(T_n,B_n,Vg_n,Vex_n);
+                %plot T vs Q
+                plotT_p2p(T_n,B_n,Vg_n);
             end
-            %use measured T to set next guess close to Tset
-            Vex_Array=Vex_Array.*sqrt(abs(DeltaTset./squeeze(data.T_p2p(T_n,B_n,:,run_n))));
-            saveMatFile;
-            Vg_ns = fliplr(Vg_ns);
+            %update plots
+            plotT_p2p_log;
         end
+        saveMatFile;
+        Vg_ns = fliplr(Vg_ns);
         for Vg_n = 1:length(Vg_list)
             data.R_mean(T_n,B_n,Vg_n)=mean(data.R(T_n,B_n,Vg_n,:));
             data.std.R_mean(T_n,B_n,Vg_n)=std(data.R(T_n,B_n,Vg_n,:));
@@ -428,11 +415,12 @@ for T_n=T_ns
             data.std.VnDC_mean(T_n,B_n,Vg_n)=std(data.VnDC(T_n,B_n,Vg_n,:));
         end
         saveMatFile;
-        disp(sprintf('Helium level at %g%%',returnHeliumLevel))
-        plotResistance(T_n);
-        plotG(T_n)
-        plotNoise(T_n);
-        plotNoiseDC(T_n)
+        close(heliumUI);
+        heliumUI = oxfordHeliumUI;
+        %plotResistance(T_n);
+        %plotG(T_n)
+        %plotNoise(T_n);
+        %plotNoiseDC(T_n)
         B_ns = fliplr(B_ns);
     end
     toc

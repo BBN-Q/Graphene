@@ -361,7 +361,7 @@ for T_n=T_ns
     TC.setPoint2 = T_set;
 
     for B_n=B_ns
-        Vex_list=Vex_array(T_n,B_n,:);
+        Vex_list=squeeze(Vex_array(T_n,B_n,:));
         %set target field
         B_set = B_list(B_n);
         MS.switchHeater = 1;

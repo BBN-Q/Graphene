@@ -9,7 +9,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%     CLEAR  and INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function DC_IV_data = DC_IV_K2400meas_YOKOexcite_K2400Gate()
+function DC_IV_data = DC_IV_K2400meas_K2400excite_YokoGate()
 temp = instrfind;
 if ~isempty(temp)
     fclose(temp)
@@ -20,12 +20,12 @@ clear DC_IV_data;
 fclose all;
 
 % Connect to the Cryo-Con 22 temperature controler
-%KGate=deviceDrivers.Keithley2400();
-%KGate.connect('24');
-KMeas=deviceDrivers.Keithley2400();
-KMeas.connect('24');
-Yoko=deviceDrivers.YokoGS200;
+Yoko=deviceDrivers.YokoGS200();
 Yoko.connect('2');
+KMeas=deviceDrivers.Keithley2400();
+KMeas.connect('23');
+KExcite=deviceDrivers.Keithley2400;
+KExcite.connect('24');
 
 % Initialize variables
 % DataInterval = input('Time interval in temperature readout (in second) = ');
@@ -67,23 +67,25 @@ DC_IV_data=struct('V_Gate_Array',V_Gate_Array,'JJCurr_Array',JJV_Array/LoadResis
 FileName = strcat('DC_IV_vs_VG_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat');
 figure; pause on;
 for i = 1:GateSteps
-    %KGate.value = V_Gate_Array(i);
+    Yoko.value = V_Gate_Array(i);
     pause(GateWait);
     for j = 1:TotalStep
         SetVolt = JJV_Array(j);
-        Yoko.value = SetVolt;
+        KExcite.value = SetVolt;
         pause(WaitTime);
     
         DC_IV_data.JJ_V(i,j) = KMeas.value();
         clf; plot(DC_IV_data.JJCurr_Array(1:j), DC_IV_data.JJ_V(i,1:j)); grid on; xlabel('Current (A)'); ylabel('Voltage (V)'); title(strcat('DC IV Measurement for JJ, ', datestr(StartTime)));
     end
-    if roundtripDC==0
-        for j=1:TotalStep
-            Yoko.value=JJV_Back(j);
-            pause(.1)
-        end
-    end
-    save(FileName,'DC_IV_data')
+
+save(FileName,'DC_IV_data')
+%     if roundtripDC==0
+%         for j=1:TotalStep
+%             KExcite.value=JJV_Back(j);
+%             pause(.1)
+%         end
+%     end
+
 end
 
 
@@ -93,9 +95,9 @@ pause off;
 %%%%%%%%%%%%%%%%%%%%%       Clear     %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 KMeas.disconnect();
+KExcite.disconnect();
 Yoko.disconnect();
-%KGate.disconnect();
 clear SetVolt;
 clear KMeas;
 clear KGate;
-clear Yoko;
+clear Lockin;

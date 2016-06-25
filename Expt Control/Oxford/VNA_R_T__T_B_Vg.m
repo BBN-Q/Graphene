@@ -89,7 +89,6 @@ function data = VNA_R_T__T_B_Vg(T_list,B_list,Vg_list)
         end
     end
 
-%measures the all variables including VNA
     function saveData(i,j,k)
         save(fullfile(start_dir, FileName2),'data');
         FilePtr = fopen(fullfile(start_dir, FileName), 'a');

@@ -163,9 +163,9 @@ TvaporRampRate = 20;
 TprobeRampRate = 20;
 PID = [500,200,100];
 
-Nmeasurements = input('How many measurements per parameter point [10]? ');
+Nmeasurements = input('How many measurements per parameter point [1]? ');
 if isempty(Nmeasurements)
-    Nmeasurements = 10;
+    Nmeasurements = 1;
 end
 sweepRate = input('Enter magnet sweep rate (Tesla/min) [0.45] = ');
 if isempty(sweepRate)
@@ -174,9 +174,9 @@ end
 assert(isnumeric(sweepRate), 'Oops! need to set a sweep rate.');
 assert(abs(sweepRate) < MS.maxSweepRate,'sweep rate set too high!');
 
-VWaitTime1 = input('Enter initial Vg equilibration time [5]: ');
+VWaitTime1 = input('Enter initial Vg equilibration time [1]: ');
 if isempty(VWaitTime1)
-    VWaitTime1 = 5;
+    VWaitTime1 = 1;
 end
 VWaitTime2 = input('Enter Vg equilibration time for each step [1]: ');
 if isempty(VWaitTime2)
@@ -187,9 +187,9 @@ if isempty(measurementWaitTime)
     measurementWaitTime = 1.2;
 end
 
-VNAwaitTime=input('Enter VNA wait time [2]: ');
+VNAwaitTime=input('Enter VNA wait time [0]: ');
 if isempty(VNAwaitTime)
-    VNAwaitTime = 2;
+    VNAwaitTime = 0;
 end
 
 UniqueName = input('Enter uniquie file identifier: ','s');
@@ -226,15 +226,10 @@ TC.rampRate1 = TvaporRampRate;
 TC.rampRate2 = TprobeRampRate;
 TC.PID1 = PID;
 TC.PID2 = PID;
-TC.setPoint1 = T_list(1)-1;
-TC.setPoint2 = T_list(1);
-TC.range1 = 1;
-TC.range2 = 1;
 
 %initialize magent
 MS.remoteMode();
 MS.sweepRate = sweepRate;
-MS.switchHeater = 1;
 
 %initialize Lockin
 LA.sineAmp = LA_Vex;
@@ -287,15 +282,19 @@ B_ns = 1:length(B_list);
 Vg_ns = 1:length(Vg_list);
 for T_n=T_ns
     T_set = T_list(T_n);
-    TC.setPoint1 = T_set-1;
-    TC.setPoint2 = T_set;
     if T_set <= 5.5        
         TC.range1 = 1;
+        TC.range2 = 1;
     elseif T_set <= 70        
-        TC.range1 = 2;        
+        TC.range1 = 2; 
+        TC.range2 = 2;  
     else
-        TC.range1 = 3;        
+        TC.range1 = 3;
+        TC.range2 = 3;
     end
+    TC.setPoint1 = T_set-1;
+    TC.setPoint2 = T_set;
+    
     stabilizeTemperature(T_set,5,0.3)
     
     
@@ -303,8 +302,10 @@ for T_n=T_ns
         
         %set target field
         field_set = B_list(B_n);
+        MS.switchHeater = 1;
         MS.targetField = field_set;
         MS.goToTargetField();
+        pause(timeLogInterval);
         timeLog();
         plotLog();
         
@@ -313,7 +314,8 @@ for T_n=T_ns
             timeLog();
             plotLog();
         end
-
+        MS.switchHeater = 0;
+        
         for Vg_n=Vg_ns
             %set Vg
             Vg_set = Vg_list(Vg_n);

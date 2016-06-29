@@ -1,0 +1,29 @@
+function data = J227onboard_power_test(power_list)
+%J227ONBOARD_POWER_TEST applys a power waits some time and removes power 
+%recording temperature
+%Jesse Crossno Jun 18th 2016
+
+%get info from user
+hold_time = input('Enter hold time (s) [300]: ');
+if isempty(hold_time)
+    hold_time = 300;
+end
+UniqueName = input('Enter uniquie file identifier: ','s');
+
+%settings
+Rex = 101.1E6;
+address='7';
+data_interval = 1; %in seconds
+
+%initialize data
+
+
+start_dir = 'D:\Crossno\data';
+start_dir = uigetdir(start_dir);
+StartTime = clock;
+FileName = strcat('X11037log_', datestr(StartTime, 'yyyymmdd_HHMMSS'),'_',UniqueName,'.mat');
+
+
+
+end
+

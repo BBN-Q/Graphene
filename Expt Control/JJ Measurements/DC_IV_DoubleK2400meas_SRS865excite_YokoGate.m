@@ -9,7 +9,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%     CLEAR  and INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function DC_IV_data = DC_IV_K2400meas_YOKOexcite_K2400Gate()
+function DC_IV_data = DC_IV_DoubleK2400meas_SRS865excite_YokoGate()
 temp = instrfind;
 if ~isempty(temp)
     fclose(temp)
@@ -19,13 +19,15 @@ clear DC_IV_data;
 %close all;
 fclose all;
 
-% Connect to the Cryo-Con 22 temperature controler
-%KGate=deviceDrivers.Keithley2400();
-%KGate.connect('24');
-KMeas=deviceDrivers.Keithley2400();
-KMeas.connect('24');
-Yoko=deviceDrivers.YokoGS200;
+% Connect to the instruments
+Yoko=deviceDrivers.YokoGS200();
 Yoko.connect('2');
+KMeasJJ0=deviceDrivers.Keithley2400();
+KMeasJJ0.connect('23');
+KMeasJJ1=deviceDrivers.Keithley2400();
+KMeasJJ1.connect('24');
+Lockin=deviceDrivers.SRS865;
+Lockin.connect('9');
 
 % Initialize variables
 % DataInterval = input('Time interval in temperature readout (in second) = ');
@@ -33,8 +35,10 @@ StartTime = clock;
 
 
 % User Inputs
-prompt='What is the load resistor (ohm)? ';
-LoadResistor = input(prompt);
+prompt='What is the load resistor on JJ0 (ohm)? ';
+LoadResistor0 = input(prompt);
+prompt='What is the load resistor on JJ1 (ohm)? ';
+LoadResistor1 = input(prompt);
 prompt = 'What is the start dc voltage (V)? ';
 StartDCVoltage = input(prompt);
 prompt = 'What is the end dc voltage (V)? ';
@@ -62,28 +66,35 @@ prompt = 'What is the gate wait time (s)? ';
 GateWait = input(prompt);
 [V_Gate_Array, GateSteps]=V_Array(StartGate,EndGate,StepGate,roundtripGate);
 
-DC_IV_data=struct('V_Gate_Array',V_Gate_Array,'JJCurr_Array',JJV_Array/LoadResistor,'JJ_V',[],'Yoko_Load_Resistor',LoadResistor,'Measurement_Wait_Time',WaitTime);
+DC_IV_data=struct('V_Gate_Array',V_Gate_Array,'JJ0Curr_Array',JJV_Array/LoadResistor0,'JJ0_V',[],'JJ1Curr_Array',JJV_Array/LoadResistor1,'JJ1_V',[],'LoadResistor0',LoadResistor0,'LoadResistor1',LoadResistor1,'Measurement_Wait_Time',WaitTime);
 
 FileName = strcat('DC_IV_vs_VG_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat');
 figure; pause on;
 for i = 1:GateSteps
-    %KGate.value = V_Gate_Array(i);
+    Yoko.value = V_Gate_Array(i);
     pause(GateWait);
     for j = 1:TotalStep
         SetVolt = JJV_Array(j);
-        Yoko.value = SetVolt;
+        Lockin.DC = SetVolt;
         pause(WaitTime);
     
-        DC_IV_data.JJ_V(i,j) = KMeas.value();
-        clf; plot(DC_IV_data.JJCurr_Array(1:j), DC_IV_data.JJ_V(i,1:j)); grid on; xlabel('Current (A)'); ylabel('Voltage (V)'); title(strcat('DC IV Measurement for JJ, ', datestr(StartTime)));
+        DC_IV_data.JJ0_V(i,j) = KMeasJJ0.value();
+        DC_IV_data.JJ1_V(i,j) = KMeasJJ1.value();
+        clf;
+        subplot(2,1,1)
+        plot(DC_IV_data.JJ0Curr_Array(1:j), DC_IV_data.JJ0_V(i,1:j)); grid on; xlabel('Current (A)'); ylabel('Voltage (V)'); title(strcat('DC IV Measurement for JJ, ', datestr(StartTime)));
+        subplot(2,1,2)
+        plot(DC_IV_data.JJ1Curr_Array(1:j), DC_IV_data.JJ1_V(i,1:j)); grid on; xlabel('Current (A)'); ylabel('Voltage (V)'); title(strcat('DC IV Measurement for JJ, ', datestr(StartTime)));
     end
+
+save(FileName,'DC_IV_data')
     if roundtripDC==0
         for j=1:TotalStep
-            Yoko.value=JJV_Back(j);
-            pause(.1)
+            Lockin.DC=JJV_Back(j);
+            pause(.01)
         end
     end
-    save(FileName,'DC_IV_data')
+
 end
 
 
@@ -92,10 +103,11 @@ pause off;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%       Clear     %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-KMeas.disconnect();
+KMeasJJ0.disconnect();
+Lockin.disconnect();
 Yoko.disconnect();
-%KGate.disconnect();
 clear SetVolt;
-clear KMeas;
-clear KGate;
-clear Yoko;
+clear KMeasJJ0;
+clear KMeasJJ1;
+clear Yoko
+clear Lockin;

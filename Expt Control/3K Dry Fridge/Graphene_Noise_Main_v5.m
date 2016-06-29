@@ -30,7 +30,7 @@
 %gain_matrix should be (T x Vg)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [data] = Graphene_Noise_Main_v4(T_Array,Vg_Array,gain_matrix,initial_Vex_Array)
+function [data] = Graphene_Noise_Main_v5(T_Array,Vg_Array,gain_matrix,initial_Vex_Array)
 tic
 % Initialize the path and create the data file with header
 DeltaTset = input('Enter target delta T: ');

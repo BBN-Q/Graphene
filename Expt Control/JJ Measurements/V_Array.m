@@ -11,7 +11,7 @@ end
 if V_Step==0
     TotalSteps=1;
 else
-    TotalSteps=(V_End-V_Start)/V_Step+1;
+    TotalSteps=round((V_End-V_Start)/V_Step)+1;
 end
 V_Array=zeros(TotalSteps,1);
 for i = 1:TotalSteps

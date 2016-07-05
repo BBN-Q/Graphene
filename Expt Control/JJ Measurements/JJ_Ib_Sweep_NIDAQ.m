@@ -32,7 +32,7 @@ for i=1:length(Vb)
     FileName2 = strcat('VJJ_vs_Time_with_Switch_', datestr(clock, 'yyyymmdd_HHMMSS_'), tag,'.mat');
     VJJvsTime=NIDAQ_ai0(sampling_rate,time_total,time_plot);
     
-    num_peaks=CountPeaks(VJJvsTime.Voltage_V,Vthresh);
+    num_peaks=CountPeaks2(VJJvsTime.Voltage_V,Vthresh,sampling_rate*160e-6);
     Ib_sweep_data.Rate(i)=num_peaks/time_total;
     save(FileName1,'Ib_sweep_data')
     save(FileName2,'VJJvsTime')

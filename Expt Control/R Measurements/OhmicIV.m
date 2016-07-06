@@ -18,29 +18,29 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%     INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-base_path = 'C:\Documents and Settings\qlab\My Documents\data\Graphene\';
-cd(base_path)
+%base_path = pwd;
+cd(pwd);
 % addpath([ base_path,'data'],'-END');
-filename = '20140327_mixer_2f_power.txt';
-data = fopen(filename,'w');
+StartTime = clock;
+FileName = strcat('RvsVgate_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat');
+%data = fopen(filename,'w');
 pause on;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%     INITIALIZE  EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-pauseTime = 8;
-
 % Connect to Lockin
-Lockin = deviceDrivers.SRS830();
-Lockin.connect('9');
-
+Keithley=deviceDrivers.Keithley2400();
+Keithley.connect('23');
+%Yoko = deviceDrivers.YokoGS200();
+%Yoko.connect('2');
+Lockin = deviceDrivers.SRS865();
+Lockin.connect('4');
 
 % Initialize variables
-DataInterval = input('Time interval in temperature readout (in second) = ');
-start_dir = 'C:\Users\qlab\Documents\data\KIT\Thermometer Calibration 2016-06\';
+%DataInterval = input('Time interval in temperature readout (in second) = ');
+%start_dir = 'C:\Users\qlab\Documents\data\KIT\Thermometer Calibration 2016-06\';
 %start_dir = pwd;
-StartTime = clock;
-FileName = strcat('Calibration_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat');
 %FilePtr = fopen(fullfile(start_dir, FileName), 'w');
 %fprintf(FilePtr, strcat(datestr(StartTime), ' CoolLog using CryoCon\r\n'));
 %fprintf(FilePtr,'Temperature_K\tLockinX\tLockinY\r\n');
@@ -50,17 +50,26 @@ FileName = strcat('Calibration_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat')
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parameters
-StartVexcit = 0.01;
-StepVexcit = 0.01;
-StopVexcit = 1;
+StartVexcit = -4;
+StopVexcit = 4;
+StepVexcit = 0.2;
 [VexcitArray, NumSteps] = ScanArrayGenerator(StartVexcit, StopVexcit, StepVexcit, 0);
 
+clear  DataArray;
+Keithley.value = VexcitArray(1);
+pause(3);
 for k=1:NumSteps
-    Lockin.write('
+    Keithley.value = VexcitArray(k);
+    pause(1.5);
+    DataArray(k, :) = [VexcitArray(k) Lockin.X Lockin.Y];
+end
+save(FileName)
+Keithley.value = 0;
+figure; plot(DataArray(:,1), DataArray(:,2)); grid on;
         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%       PLOT AND SAVE DATA     %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Lockin.disconnect();
-clear Lakeshore, Lockin;
+Lockin.disconnect(); Keithley.disconnect();
+clear Lockin, Keithley;

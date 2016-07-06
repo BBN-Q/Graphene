@@ -19,11 +19,12 @@ clear Diff_IV_data;
 fclose all;
 
 % Connect to the Cryo-Con 22 temperature controler
-Keithley=deviceDrivers.
-Yoko = deviceDrivers.YokoGS200();
-Yoko.connect('2');
-Lockin = deviceDrivers.SRS830();
-Lockin.connect('7');
+Keithley=deviceDrivers.Keithley2400();
+Keithley.connect('23');
+%Yoko = deviceDrivers.YokoGS200();
+%Yoko.connect('2');
+Lockin = deviceDrivers.SRS865();
+Lockin.connect('4');
 
 % Initialize variables
 % DataInterval = input('Time interval in temperature readout (in second) = ');

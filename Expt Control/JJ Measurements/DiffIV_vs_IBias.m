@@ -19,10 +19,10 @@ Lockin = deviceDrivers.SRS865();
 Lockin.connect('4');
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
-figure(999);
+figure(799);
 function plot_data()
-    clf; plot(BiasList(1:k), data.X); grid on;
-    xlabel('V_{bias} (V)'); ylabel('dV/dI (\Omega)');
+    clf; plot(BiasList(1:k), data.X, '.-'); grid on;
+    xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%

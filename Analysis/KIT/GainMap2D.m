@@ -7,7 +7,7 @@ function [ Result ] = GainMap2D( freq, fc, bw, x, y, spec, ref )
 % freq: frequency array, fc = center frequency of the gain, bw = bandwidth
 % spec(x, y) is an array with length = length(freq)
 
-Result.Freq = freq;
+%Result.Freq = freq;
 Result.x = x;
 Result.y = y;
 for j=1:length(x)
@@ -16,7 +16,7 @@ for j=1:length(x)
     end
 end
 Result.Gain = gain;
-figure; contour(Result.x, Result.y, Result.Gain', 'ShowText','on'); grid on;
+figure(600); contour(Result.x, Result.y, Result.Gain', 'ShowText','on'); grid on;
 title(['BW = [', num2str((fc-0.5*bw)*1e-9), ' ', num2str((fc+0.5*bw)*1e-9), '] GHz']);
 set(gca, 'FontSize', 18);
 

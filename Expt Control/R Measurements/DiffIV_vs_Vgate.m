@@ -7,8 +7,10 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = DiffIV_vs_IBias(BiasList, InitialWaitTime, measurementWaitTime)
+function [data] = DiffIV_vs_Vgate(VgateList, InitialWaitTime, measurementWaitTime)
 pause on;
+GateController = deviceDrivers.Keithley2400();
+GateController.connect('23');
 %Yoko = deviceDrivers.YokoGS200();
 %Yoko.connect('2');
 Lockin = deviceDrivers.SRS865();
@@ -16,23 +18,23 @@ Lockin.connect('4');
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
 function plot_data()
-    figure(799); clf; plot(BiasList(1:k), data.X, '.-'); grid on;
+    figure(799); clf; plot(VgateList(1:k), data.X, '.-'); grid on;
     xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.DC = BiasList(1);
+GateController.value = VgateList(1);
 pause(InitialWaitTime);
-for k=1:length(BiasList)
-    Lockin.DC = BiasList(k);
+for k=1:length(VgateList)
+    GateController.value = VgateList(k);
     pause(measurementWaitTime);
     data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
-    save('backup.mat')
     plot_data()
 end
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.DC = 0;
-Lockin.disconnect(); 
-pause off; clear Lockin;
+%Keithley.value = 0;
+GateController.value = 0;
+Lockin.disconnect(); GateController.disconnect();
+pause off; clear Lockin GateController;
 end

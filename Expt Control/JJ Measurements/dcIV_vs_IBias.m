@@ -7,17 +7,18 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = DiffIV_vs_IBias(BiasList, InitialWaitTime, measurementWaitTime)
+function [data] = dcIV_vs_IBias(BiasList, dcAmplification, InitialWaitTime, measurementWaitTime)
 pause on;
-%Yoko = deviceDrivers.YokoGS200();
-%Yoko.connect('2');
+DVM=deviceDrivers.Keithley2400();
+DVM.connect('23');
 Lockin = deviceDrivers.SRS865();
 Lockin.connect('4');
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
+figure(799); 
 function plot_data()
-    figure(799); clf; plot(BiasList(1:k), data.X, '.-'); grid on;
-    xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
+    clf; plot(BiasList(1:k), data.dcV, '.-'); grid on;
+    xlabel('V_{bias} (V)'); ylabel('dc V_{JJ} (V)');
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -26,13 +27,16 @@ pause(InitialWaitTime);
 for k=1:length(BiasList)
     Lockin.DC = BiasList(k);
     pause(measurementWaitTime);
-    data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
+    data.dcV(k) = DVM.value;
     save('backup.mat')
     plot_data()
 end
+data.dcV = data.dcV/dcAmplification;
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
+%Keithley.value = 0;
 Lockin.DC = 0;
-Lockin.disconnect(); 
-pause off; clear Lockin;
+%Lockin.disconnect();
+DVM.disconnect();
+pause off; clear Lockin DVM;
 end

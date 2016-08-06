@@ -50,17 +50,17 @@ Lockin.connect('4');
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Parameters
-StartVexcit = -4;
-StopVexcit = 4;
-StepVexcit = 0.2;
+StartVexcit = -1;
+StopVexcit = 1;
+StepVexcit = 0.02;
 [VexcitArray, NumSteps] = ScanArrayGenerator(StartVexcit, StopVexcit, StepVexcit, 0);
 
 clear  DataArray;
 Keithley.value = VexcitArray(1);
-pause(3);
+pause(5);
 for k=1:NumSteps
     Keithley.value = VexcitArray(k);
-    pause(1.5);
+    pause(5);
     DataArray(k, :) = [VexcitArray(k) Lockin.X Lockin.Y];
 end
 save(FileName)
@@ -72,4 +72,4 @@ figure; plot(DataArray(:,1), DataArray(:,2)); grid on;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Lockin.disconnect(); Keithley.disconnect();
-clear Lockin, Keithley;
+clear Lockin; clear Keithley;

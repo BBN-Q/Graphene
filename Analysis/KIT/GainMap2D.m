@@ -1,7 +1,7 @@
 function [ Result ] = GainMap2D( freq, fc, bw, x, y, spec, ref )
 % Integrating a power spectral density or S
 % parameters with in a certain bandwidth
-
+% GainMap2D( freq, fc, bw, x, y, spec, ref )
 % data format
 % USE LINEAR Spectrum
 % freq: frequency array, fc = center frequency of the gain, bw = bandwidth
@@ -16,7 +16,7 @@ for j=1:length(x)
     end
 end
 Result.Gain = gain;
-figure(600); contour(Result.x, Result.y, Result.Gain', 'ShowText','on'); grid on;
+figure(600); clf; contour(Result.x, Result.y, Result.Gain', 'ShowText','on'); grid on;
 title(['BW = [', num2str((fc-0.5*bw)*1e-9), ' ', num2str((fc+0.5*bw)*1e-9), '] GHz']);
 set(gca, 'FontSize', 18);
 

@@ -1,12 +1,13 @@
 function [ Result ] = GainMap3D( freq, fc, bw, x, y, z, spec, ref )
 % Integrating a power spectral density or S
 % parameters with in a certain bandwidth
-
+% GainMap3D( freq, fc, bw, x, y, z, spec, ref )
 % data format
 % USE LINEAR Spectrum
 % z is third axis stacking with (x, y) from GainMap2D
 % freq: frequency array, fc = center frequency of the gain, bw = bandwidth
 % spec(x, y) is an array with length = length(freq)
+
 for k = 1:length(z)
     InterimResult = GainMap2D(freq, fc, bw, x, y, squeeze(spec(k,:,:,:)), ref);
     InterimResult = rmfield(InterimResult, 'x'); InterimResult = rmfield(InterimResult, 'y');

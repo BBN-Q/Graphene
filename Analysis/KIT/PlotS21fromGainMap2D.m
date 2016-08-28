@@ -1,9 +1,10 @@
-function [result] = PlotS21fromGainMap2D(freq, x, y, spec, ref)
+function [ result ] = PlotS21fromGainMap2D(freq, x, y, spec, ref)
 % Plotting the S21 or Spec under the data cursor in the GainMap2D figure
-
+% [result] = PlotS21fromGainMap2D(freq, x, y, spec, ref)
+% CURSOR AT CURRENT FIGURE
 % data format
 % USE LINEAR Spectrum
-figure(600);
+
 CursorInfo = getCursorInfo(datacursormode(gcf));
 result.pos = CursorInfo.Position;
 [v, xIndex] = min(abs(x-result.pos(1)));

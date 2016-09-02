@@ -1,11 +1,11 @@
 function Ib_sweep_data = JJ_Ib_Sweep_NIDAQ(Power,Gate,VbStart,VbEnd,VbStep,Vthresh,sampling_rate, time_total, time_plot,FileStart)
 %Sweeps bias current
 
-temp = instrfind;
-if ~isempty(temp)
-    fclose(temp);
-    delete(temp);
-end
+% temp = instrfind;
+% if ~isempty(temp)
+%     fclose(temp);
+%     delete(temp);
+% end
 
 %Connect to Lockin for Bias Current
 Lockin=deviceDrivers.SRS865;
@@ -29,13 +29,14 @@ for i=1:length(Vb)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %CHANGE MODULE FOR APPROPRIATE INSTRUMENTS
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    FileName2 = strcat('VJJ_vs_Time_with_Switch_', datestr(clock, 'yyyymmdd_HHMMSS_'), tag,'.mat');
+    FileName2 = strcat('Peaks_vs_Time_', datestr(clock, 'yyyymmdd_HHMMSS_'), tag,'.mat');
     VJJvsTime=NIDAQ_ai0(sampling_rate,time_total,time_plot);
-    
-    num_peaks=CountPeaks2(VJJvsTime.Voltage_V,Vthresh,sampling_rate*160e-6);
-    Ib_sweep_data.Rate(i)=num_peaks/time_total;
+
+    Peak_data=ExtractPeaks(VJJvsTime.Time_s,VJJvsTime.Voltage_V,Vthresh,sampling_rate*60e-6,sampling_rate*160e-6);
+    %num_peaks=CountPeaks2(VJJvsTime.Voltage_V,Vthresh,sampling_rate*160e-6);
+    Ib_sweep_data.Rate(i)=Peak_data.num_peaks/time_total;
     save(FileName1,'Ib_sweep_data')
-    save(FileName2,'VJJvsTime')
+    save(FileName2,'Peak_data')
     close all
 end
 

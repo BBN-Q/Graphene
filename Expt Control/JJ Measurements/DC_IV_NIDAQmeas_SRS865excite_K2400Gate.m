@@ -78,8 +78,15 @@ for i = 1:GateSteps
         SetVolt = JJV_Array(j);
         Lockin.DC = SetVolt;
         pause(WaitTime);
-        
-        pydata=py.take_data.take_data(num_points,sampling_rate);
+        flag=0;
+        while flag==0
+            try
+                pydata=py.take_data.take_data(num_points,sampling_rate);
+                flag=1;
+            catch
+                flag=0;
+            end
+        end
         DC_IV_data.JJ_V(i,j) = mean(double(py.array.array('d',py.numpy.nditer(pydata))));
         
         clf; plot(DC_IV_data.JJCurr_Array(1:j), DC_IV_data.JJ_V(i,1:j)); grid on; xlabel('Current (A)'); ylabel('Voltage (V)'); title(strcat('DC IV Measurement for JJ, ', datestr(StartTime)));

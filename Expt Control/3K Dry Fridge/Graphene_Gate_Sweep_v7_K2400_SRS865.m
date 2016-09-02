@@ -25,7 +25,6 @@ VWaitTime1 = input('Enter initial Vg equilibration time: ');
 VWaitTime2 = input('Enter Vg equilibration time for each step: ');
 Vex = input('Enter source-drain excitation voltage: ');
 Resistor = input('Enter load resistance: ');
-MeasurementWaitTime = input('Enter time between lockin measurents: ');
 dev_w = input('Enter device width (m): ');
 dev_l = input('Enter device length (m): ');
 UniqueName = input('Enter uniquie file identifier: ','s');
@@ -41,10 +40,6 @@ HeaderStr=strcat(datestr(StartTime), ' Gate sweep using Graphene_Gate_swep_v1 Ve
     '\r\nTime\tVg_(V)\tVsdX_(V)\tVsdY_(V)\tVsdR_(V)\tVsdTH_(deg)\r\n');
 fprintf(FilePtr, HeaderStr);
 fclose(FilePtr);
-
-
-% Ending values
-EndingVg = 0;
 
 % Connect to the all the various devices
 VG = deviceDrivers.Keithley2400();

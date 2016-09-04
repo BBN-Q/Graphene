@@ -30,8 +30,8 @@ function data = Noise_R_G__T_B_Vg_Vex(T_list,B_list,Vg_list,gain_array,Vex_list)
         grid on; hold on;
         last = find(data.T_p2p(i,j,k,:)==0,1)-1;
         plot(squeeze(data.P_p2p(i,j,k,1:last)),squeeze(data.T_p2p(i,j,k,1:last)),'b.-','MarkerSize',20);view(2);
-        x = linspace(0,max(data.P_p2p(i,j,k,1:last))*1.1,50);
-        G = mean(data.G(i,j,k,1:last));
+        x = linspace(0,max(squeeze(data.P_p2p(i,j,k,1:last)))*1.1,50);
+        G = mean(squeeze(data.G(i,j,k,1:last)));
         plot(x,x/G,'r--');
     end
     function plotNoiseDC(i)
@@ -142,7 +142,7 @@ function data = Noise_R_G__T_B_Vg_Vex(T_list,B_list,Vg_list,gain_array,Vex_list)
     function saveMatFile()
         save(fullfile(start_dir, FileName2),'data');
     end
-    function checkLockinSensitivity(lowerBound,upperBound)
+    function checkLockinSensitivity1(lowerBound,upperBound)
         if ~exist('lowerBound','var')
             lowerBound = 0.10;
         end
@@ -161,6 +161,28 @@ function data = Noise_R_G__T_B_Vg_Vex(T_list,B_list,Vg_list,gain_array,Vex_list)
             end
             pause(LA1_sensWaitTime)
             R = LA1.R;
+        end
+    end
+
+    function checkLockinSensitivity2(lowerBound,upperBound)
+        if ~exist('lowerBound','var')
+            lowerBound = 0.10;
+        end
+        if ~exist('upperBound','var')
+            upperBound = 0.75;
+        end
+        
+        R = LA2.R;
+        while (R > LA2_sens*upperBound) || R < LA2_sens*lowerBound
+            if R > LA2_sens*upperBound
+                LA2.decreaseSens();
+                LA2_sens = LA2.sens();
+            elseif R < LA2_sens*lowerBound
+                LA2.increaseSens()
+                LA2_sens = LA2.sens();
+            end
+            pause(LA2_sensWaitTime)
+            R = LA2.R;
         end
     end
 
@@ -204,6 +226,7 @@ LA1_sensWaitTime = LA1_timeConstant*4;
 LA2_phase = 0;
 LA2_timeConstant = 0.3;
 LA2_coupling = 'AC';
+LA2_sensWaitTime = LA2_timeConstant*4;
 LA2_sens = 20E-6;
 LA2_bufferRate = 16;
 
@@ -390,7 +413,8 @@ for T_n=T_ns
             for Vex_n=1:length(Vex_list)
                 LA1_Vex=max(0.01,round(100*Vex_list(Vex_n))/100);
                 LA1.sineAmp=LA1_Vex;
-                checkLockinSensitivity();
+                checkLockinSensitivity1();
+                checkLockinSensitivity2();
 
                 %take "fast" data
                 measure_data(T_n,B_n,Vg_n,Vex_n);

@@ -179,8 +179,8 @@ MM.connect('5');
 %Connect lockin amplifier
 LA1 = deviceDrivers.SRS830();
 LA1.connect('8')
-LA2 = deviceDrivers.SRS830();
-LA2.connect('9')
+LA2 = deviceDrivers.SRS844();
+LA2.connect('11')
 %Connect to the Oxford magnet supply
 MS = deviceDrivers.Oxford_IPS_120_10();
 MS.connect('25');

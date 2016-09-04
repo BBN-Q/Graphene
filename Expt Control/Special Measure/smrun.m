@@ -378,8 +378,8 @@ for i = 1:length(disp)
     % modify if reducing data before plotting
 
     s.subs = num2cell(ones(1, nloops - dataloop(dc) + 1 + ndim(dc)));
-    [s.subs{end-disp(i).dim+1:end}] = deal(':'); 
-    %s.subs = [num2cell(ones(1, dataloop(scan.dispchan(i)) + ndim(scan.dispchan(i))-2)), ':', ':'];
+    [s.subs{end-disp(i).dim+1:end}] = deal(':');  %previously: s.subs{end-disp(i).dim+1:end}, gave index=0 error
+%     s.subs = [num2cell(ones(1, dataloop(scan.dispchan(i)) + ndim(scan.dispchan(i))-2)), ':', ':'];
     if dataloop(dc) - ndim(dc) < 1 
         x = 1:datadim(dc, ndim(dc));
         xlab = 'n';

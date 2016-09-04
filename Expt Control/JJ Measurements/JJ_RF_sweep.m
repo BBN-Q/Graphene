@@ -15,8 +15,8 @@ if ~isempty(temp)
     delete(temp);
 end
 
-RFfreq=1.6; %frequency in GHz
-RFpow=[-7, -4, 0, 3, 6, 10]; %power in dBm
+RFfreq=; %frequency in GHz
+RFpow=13; %power in dBm
 
 RF_sweep_data=struct('RFfreq_Array',RFfreq,'RFpow_Array',RFpow,'Rate',[],'Std',[]);
 
@@ -28,11 +28,11 @@ for i=1:length(RFfreq)
     freqstring=strrep(num2str(RFfreq(i)),'.','p');        
     for j=1:length(RFpow)
         powstring=strrep(num2str(RFpow(j)),'-','n');
-        filestring=num2str(183+(i-1)*length(RFpow)+j);
+        filestring=num2str(249+(i-1)*length(RFpow)+j); %Replace number with desired file number
         
         tag=strcat('RF_',freqstring,'GHz_',powstring,'dBm_File',filestring);
         RFsource.power=RFpow(j);
-        RF_switch_data=JJ_switch_module(1e6,2.80,0,1800,0.18e-3,1.70,0.01,20,tag);
+        RF_switch_data=JJ_switch_module(1e6,2.80,0,600,0.18e-3,1.70,0.01,20,tag);
 
         RFstats=GetStatsFromJJSwitch(RF_switch_data,1);
         RF_sweep_data.Rate(i,j)=RFstats.avg_countsperbin;

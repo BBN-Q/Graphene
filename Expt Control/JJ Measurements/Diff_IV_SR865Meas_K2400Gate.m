@@ -27,15 +27,7 @@ K2400=deviceDrivers.Keithley2400;
 K2400.connect('24');
 
 % Initialize variables
-% DataInterval = input('Time interval in temperature readout (in second) = ');
-start_dir = pwd;
-start_dir = uigetdir(start_dir);
 StartTime = clock;
-FileName = strcat('Diff_IV_Gate_Heat', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.dat');
-FilePtr = fopen(fullfile(start_dir, FileName), 'w');
-fprintf(FilePtr, strcat(datestr(StartTime), ' Differential IV using SR865 \r\n'));
-fprintf(FilePtr,'Gate\tSR865_DC_V\tLockinX\tLockinY\tLockinR\tLockinTH\r\n');
-fclose(FilePtr);
 
 % Input Parameters
 prompt='What is the SR865 excitation voltage? ';
@@ -98,9 +90,6 @@ for i=1:GateSteps
             end
         
             Diff_IV_temp(j,:) = [SetVolt LockinX LockinY LockinR LockinTH];
-            FilePtr = fopen(fullfile(start_dir, FileName), 'a');
-            fprintf(FilePtr,'%e\t%e\t%e\t%e\t%e\t%e\r\n',V_Gate_Array(i),Diff_IV_temp(j,:));
-            fclose(FilePtr);
             clf; plot(Diff_IV_temp(:,1)/LoadResistor, Diff_IV_temp(:,4)/(SR865ExciteVolt/LoadResistor)); grid on; xlabel('Current (A)'); ylabel('dV/dI (\Omega)'); title(strcat('Diff IV for JJ, start date and time: ', datestr(StartTime)));
         end
         if roundtripDC==0

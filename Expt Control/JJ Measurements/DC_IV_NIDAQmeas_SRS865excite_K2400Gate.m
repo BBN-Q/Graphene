@@ -85,6 +85,7 @@ for i = 1:GateSteps
                 flag=1;
             catch
                 flag=0;
+                py.take_data.reset_device;
             end
         end
         DC_IV_data.JJ_V(i,j) = mean(double(py.array.array('d',py.numpy.nditer(pydata))));

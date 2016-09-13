@@ -1,6 +1,6 @@
 function [ SpecAvg_W ] = GetSpecAvg( data, fc, bw )
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+% Function to get the averaged value of a power spectral density or S
+% parameters with in a certain bandwidth
 
 % ascii spectrum files:
 %[v, iBegin] = min(abs(data-(fc-bw)));

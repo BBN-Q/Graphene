@@ -15,13 +15,14 @@ for k = 1:length(dClock)
         CriticalCurrent = GetCriticalCurrent(IBias(floor(end/2):end), data.dcV(StartingIndex+floor(OneSweepLength/2):k));
         %result.Ic(iCounter) = abs(CriticalCurrent.DiffMin);
         result.IcIndex(iCounter) = CriticalCurrent.minIndex;
-        result.Ic(iCounter) = abs(IBias(floor(end/2)+result.IcIndex(iCounter)));
+        if floor(length(IBias)/2) > result.IcIndex(iCounter)
+            result.Ic(iCounter) = abs(IBias(floor(end/2)+result.IcIndex(iCounter)));
+        else
+            result.Ic(iCounter) = abs(IBias(end));
+            disp(['length of IBias = ' num2str(length(IBias)) 'and result.IcIndex is now = ' num2str(result.IcIndex(iCounter))])
+            %figure; plot(data.dcV(StartingIndex+floor(TrimRatio*OneSweepLength):StartingIndex+floor(OneSweepLength/2))); grid on; title(k);
+        end
         result.EndingIndex(iCounter) = k;
-    %if result.Ic(iCounter) > 1e-6
-    %    StartingIndex
-    %    figure; plot(data.dcV(StartingIndex+floor(OneSweepLength/2):k), '.-'); grid on;
-    %    hold on; plot(diff(data.dcV(StartingIndex+floor(OneSweepLength/2):k-floor(TrimRatio*OneSweepLength))));
-    %end
         iCounter = iCounter + 1;
         StartingIndex = k + 1;
     end

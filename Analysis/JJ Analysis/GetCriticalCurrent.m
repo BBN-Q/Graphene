@@ -14,7 +14,7 @@ function result = GetCriticalCurrent(IbiasArray, dVdIArray)
         [maxValue, maxIndex] = max(diff(dVdIArray));
         [minValue, minIndex] = min(diff(dVdIArray));
         result.DiffMax = interp1(IbiasArray, maxIndex+0.5);
-        result.DiffMin = interp1(IbiasArray, maxIndex+0.5);
+        result.DiffMin = interp1(IbiasArray, minIndex+0.5);
         result.maxIndex = maxIndex+1;
         result.minIndex = minIndex+1;
     end

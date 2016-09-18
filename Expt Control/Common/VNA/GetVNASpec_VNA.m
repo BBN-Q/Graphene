@@ -16,5 +16,5 @@ VNA.connect('192.168.5.101')
 VNA.disconnect();
 clear VNA;
 
-figure; plot(spec.Freq*1e-9, 20*log10(abs(spec.S))); grid on;
+figure(123); clf; plot(spec.Freq*1e-9, 20*log10(abs(spec.S))); grid on;
 xlabel('Frequency (GHz)'); ylabel('S_{11} (dB)');

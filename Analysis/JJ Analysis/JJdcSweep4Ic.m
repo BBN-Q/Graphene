@@ -8,26 +8,15 @@ StartingIndex = 1;
 iCounter = 1;
 for k = 1:length(dClock)
     if dClock(k) > 2.5
-        CriticalCurrent = GetCriticalCurrent(IBias(1+floor(TrimRatio*OneSweepLength):floor(end/2)+1), data.dcV(StartingIndex+floor(TrimRatio*OneSweepLength):StartingIndex+floor(OneSweepLength/2)));
+        CriticalCurrent = GetCriticalCurrent(IBias(1+floor(TrimRatio*OneSweepLength):floor(end/2)), data.dcV(StartingIndex+floor(TrimRatio*OneSweepLength):StartingIndex-1+floor(OneSweepLength/2)));
         result.Ir(iCounter) = CriticalCurrent.DiffMin;
-        %result.IrIndex(iCounter) = CriticalCurrent.minIndex;
-        %result.Ir(iCounter) = IBias(result.IrIndex(iCounter));
         CriticalCurrent = GetCriticalCurrent(IBias(floor(end/2)+1:end), data.dcV(StartingIndex+floor(OneSweepLength/2):StartingIndex-1+OneSweepLength));
-        %result.Ic(iCounter) = abs(CriticalCurrent.DiffMin);
-        result.IcIndex(iCounter) = CriticalCurrent.minIndex;
+        %result.IcIndex(iCounter) = CriticalCurrent.minIndex;
         result.Ic(iCounter) = abs(CriticalCurrent.DiffMin);
-        if iCounter == 1
-            figure; plot(IBias(floor(end/2):end), data.dcV(StartingIndex+floor(OneSweepLength/2)-1:StartingIndex-1+OneSweepLength));
-            figure; plot(diff(data.dcV(StartingIndex+floor(OneSweepLength/2)-1:StartingIndex-1+OneSweepLength)));
-        end
-        %if floor(length(IBias)/2) > result.IcIndex(iCounter)
-        %    result.Ic(iCounter) = abs(IBias(floor(end/2)+result.IcIndex(iCounter)));
-        %else
-        %    result.Ic(iCounter) = abs(IBias(end));
-        %    disp(['iCounter = ' num2str(iCounter) ', length of IBias = ' num2str(length(IBias)) ' and result.IcIndex is now = ' num2str(result.IcIndex(iCounter))])
-            %figure; plot(data.dcV(StartingIndex+floor(TrimRatio*OneSweepLength):StartingIndex+floor(OneSweepLength/2))); grid on; title(k);
-        %end
         result.EndingIndex(iCounter) = k;
+        if abs(CriticalCurrent.DiffMin) > 2.996e-6
+            figure(123); clf; plot(IBias(floor(end/2)+1+1:end), diff(data.dcV(StartingIndex+floor(OneSweepLength/2):StartingIndex-1+OneSweepLength)));
+        end
         iCounter = iCounter + 1;
         StartingIndex = k + 1;
     end

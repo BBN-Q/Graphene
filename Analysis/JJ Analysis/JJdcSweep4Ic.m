@@ -9,9 +9,13 @@ iCounter = 1;
 for k = 1:length(dClock)
     if dClock(k) > 2.5
         CriticalCurrent = GetCriticalCurrent(IBias(1+floor(TrimRatio*OneSweepLength):floor(end/2)+1), data.dcV(StartingIndex+floor(TrimRatio*OneSweepLength):StartingIndex+floor(OneSweepLength/2)));
-        %result.Ir(iCounter) = CriticalCurrent.DiffMin;
-        result.IrIndex(iCounter) = CriticalCurrent.minIndex;
-        result.Ir(iCounter) = IBias(result.IrIndex(iCounter));
+        %if iCounter == 1
+        %    figure; plot(IBias(1+floor(TrimRatio*OneSweepLength):floor(end/2)+1), data.dcV(StartingIndex+floor(TrimRatio*OneSweepLength):StartingIndex+floor(OneSweepLength/2)), '.-');
+        %    figure; plot(diff(data.dcV(101:501)));
+        %end
+        result.Ir(iCounter) = CriticalCurrent.DiffMin;
+        %result.IrIndex(iCounter) = CriticalCurrent.minIndex;
+        %result.Ir(iCounter) = IBias(result.IrIndex(iCounter));
         CriticalCurrent = GetCriticalCurrent(IBias(floor(end/2):end), data.dcV(StartingIndex+floor(OneSweepLength/2):k));
         %result.Ic(iCounter) = abs(CriticalCurrent.DiffMin);
         result.IcIndex(iCounter) = CriticalCurrent.minIndex;
@@ -19,7 +23,7 @@ for k = 1:length(dClock)
             result.Ic(iCounter) = abs(IBias(floor(end/2)+result.IcIndex(iCounter)));
         else
             result.Ic(iCounter) = abs(IBias(end));
-            disp(['length of IBias = ' num2str(length(IBias)) 'and result.IcIndex is now = ' num2str(result.IcIndex(iCounter))])
+            disp(['iCounter = ' num2str(iCounter) ', length of IBias = ' num2str(length(IBias)) ' and result.IcIndex is now = ' num2str(result.IcIndex(iCounter))])
             %figure; plot(data.dcV(StartingIndex+floor(TrimRatio*OneSweepLength):StartingIndex+floor(OneSweepLength/2))); grid on; title(k);
         end
         result.EndingIndex(iCounter) = k;

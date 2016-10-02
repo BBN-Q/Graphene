@@ -6,6 +6,7 @@ OneSweepLength = floor(data.SweepTime*data.fs);
 IBias = linspace(data.IbiasRange(2), data.IbiasRange(1), OneSweepLength);
 StartingIndex = 1;
 iCounter = 1;
+iSamplingCounter = 1;
 for k = 1:length(dClock)
     if dClock(k) > 2.5
         % MovingAvg is a function to replace smooth moving avg
@@ -15,8 +16,9 @@ for k = 1:length(dClock)
         %result.IcIndex(iCounter) = CriticalCurrent.minIndex;
         result.Ic(iCounter) = abs(CriticalCurrent.DiffMin);
         result.EndingIndex(iCounter) = k;
-        if abs(CriticalCurrent.DiffMin) > 2.996e-6
-            figure(123); clf; plot(IBias(floor(end/2)+1+1:end), diff(data.dcV(StartingIndex+floor(OneSweepLength/2):StartingIndex-1+OneSweepLength)));
+        if mod(iCounter, 1000) == 0
+            result.dcV(iSamplingCounter, :) = data.dcV(StartingIndex:StartingIndex-1+OneSweepLength);
+            iSamplingCounter = iSamplingCounter + 1;
         end
         iCounter = iCounter + 1;
         StartingIndex = k + 1;

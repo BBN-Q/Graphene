@@ -9,8 +9,8 @@
 
 function [data] = dcIV_vs_IBias(BiasList, dcAmplification, InitialWaitTime, measurementWaitTime)
 pause on;
-DVM=deviceDrivers.Keithley2400();
-DVM.connect('13');
+DVM=deviceDrivers.Keysight34410A();
+DVM.connect('22');
 Lockin = deviceDrivers.SRS865();
 Lockin.connect('4');
 

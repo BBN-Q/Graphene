@@ -23,11 +23,11 @@ fclose all;
 TC = deviceDrivers.CryoCon22();
 TC.connect('12');
 Lockin = deviceDrivers.SRS830();
-Lockin.connect('8');
+Lockin.connect('9');
 
 % Initialize variables
 DataInterval = input('Time interval in temperature readout (in second) = ');
-start_dir = 'C:\Users\qlab\Documents\Graphene Data\3K Fridge CoolLog Repository\';
+start_dir = 'C:\Users\qlab\Documents\Graphene Data\';
 start_dir = pwd;
 StartTime = clock;
 FileName = strcat('Cool4Tc_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat');
@@ -38,15 +38,18 @@ FileName = strcat('Cool4Tc_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat');
 
 % temperature log loop
 j=1;
-figure; pause on;
+pause on;
+figure(234);
 while true
-    CoolLogData(j,:) = [etime(clock, StartTime) TC.temperatureA() Lockin.X() Lockin.Y()];
+    CoolLogData.time(j) = etime(clock, StartTime);
+    CoolLogData.T(j) = TC.temperatureA(); %QueryT_CryoCon();
+    %LockinV = QueryXY_Lockin(9);
+    CoolLogData.X(j) = Lockin.X; CoolLogData.Y(j) = Lockin.Y;
+    %CoolLogData(j,:) = [etime(clock, StartTime) TC.temperatureA() Lockin.X() Lockin.Y()];
     pause(DataInterval);
-    %FilePtr = fopen(fullfile(start_dir, FileName), 'a');
-    %fprintf(FilePtr,'%0.3f\t%e\t%e\t%e\r\n',CoolLogData(j,:));
-    %fclose(FilePtr);
     save(FileName);
-    clf; plot(CoolLogData(:,2), CoolLogData(:,3)); grid on; ylabel('Lockin X (V)'); xlabel('Temperature (K)'); title(strcat('Cooling for Tc, start date and time: ', datestr(StartTime)));
+    clf; plot(CoolLogData.T, CoolLogData.X, '.-'); grid on; ylabel('Lockin X (V)'); xlabel('Temperature (K)'); title(strcat('Cooling for Tc, start date and time: ', datestr(StartTime)));
+    %figure(233); clf; plot(CoolLogData.time, CoolLogData.T, '.-'); grid on; xlabel('time (s)'); ylabel('T (K)');
     j = j+1;
 end
 pause off;
@@ -55,4 +58,5 @@ pause off;
 %%%%%%%%%%%%%%%%%%%%%       Clear     %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TC.disconnect(); Lockin.disconnect();
-clear TC, Lockin;
+clear Lockin TC;
+end

@@ -1,33 +1,23 @@
 % Getting Ic and Ir from dcV of the JJ acquired from NI-DAQ
 
-function result = JJdcSweep4Ic(data, TrimRatio)
+function result = JJdcSweep4Ic(data, TrimRatio, SmoothSpan)
 dClock = diff(data.clocking);
 OneSweepLength = floor(data.SweepTime*data.fs);
 IBias = linspace(data.IbiasRange(2), data.IbiasRange(1), OneSweepLength);
 StartingIndex = 1;
-iCounter = 1; 
-plotFlag = 0;
+iCounter = 1;
 for k = 1:length(dClock)
     if dClock(k) > 2.5
-        CriticalCurrent = GetCriticalCurrent(IBias(1+floor(TrimRatio*OneSweepLength):floor(end/2)), data.dcV(StartingIndex+floor(TrimRatio*OneSweepLength):StartingIndex+floor(OneSweepLength/2)-10));
-        %CriticalCurrent = GetCriticalCurrent(IBias(1:floor(end/2)), data.dcV(StartingIndex:StartingIndex+floor(OneSweepLength/2)));
+        % MovingAvg is a function to replace smooth moving avg
+        CriticalCurrent = GetCriticalCurrent(IBias(1+floor(TrimRatio*OneSweepLength):floor(end/2)), data.dcV(StartingIndex+floor(TrimRatio*OneSweepLength):StartingIndex-1+floor(OneSweepLength/2)), SmoothSpan);
         result.Ir(iCounter) = CriticalCurrent.DiffMin;
-        result.IrIndex(iCounter) = CriticalCurrent.minIndex;
-
-        %if (plotFlag) == 0 && (k > 10000)
-        %    figure; plot(diff(data.dcV(StartingIndex:StartingIndex+floor(OneSweepLength/2)))); grid on;
-        %    plotFlag = 1;
-        %    iCounter
-        %end
-        
-        CriticalCurrent = GetCriticalCurrent(IBias(floor(end/2):end), data.dcV(StartingIndex+floor(OneSweepLength/2):k));
+        CriticalCurrent = GetCriticalCurrent(IBias(floor(end/2)+1:end), data.dcV(StartingIndex+floor(OneSweepLength/2):StartingIndex-1+OneSweepLength), SmoothSpan);
+        %result.IcIndex(iCounter) = CriticalCurrent.minIndex;
         result.Ic(iCounter) = abs(CriticalCurrent.DiffMin);
-        result.IcIndex(iCounter) = CriticalCurrent.minIndex;
-        %if (floor(length(IBias)/2)+result.IcIndex(iCounter)) > length(IBias)
-        %    result.Ic(iCounter) = abs(IBias(1));
-        %else result.Ic(iCounter) = abs(IBias(floor(end/2)+result.IcIndex(iCounter)));
-        %end
         result.EndingIndex(iCounter) = k;
+        if abs(CriticalCurrent.DiffMin) > 2.996e-6
+            figure(123); clf; plot(IBias(floor(end/2)+1+1:end), diff(data.dcV(StartingIndex+floor(OneSweepLength/2):StartingIndex-1+OneSweepLength)));
+        end
         iCounter = iCounter + 1;
         StartingIndex = k + 1;
     end

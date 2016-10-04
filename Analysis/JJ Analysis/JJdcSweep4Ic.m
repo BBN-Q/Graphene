@@ -16,7 +16,7 @@ for k = 1:length(dClock)
         %result.IcIndex(iCounter) = CriticalCurrent.minIndex;
         result.Ic(iCounter) = abs(CriticalCurrent.DiffMin);
         result.EndingIndex(iCounter) = k;
-        if mod(iCounter, 1000) == 0
+        if mod(iCounter, 500) == 0
             result.dcV(iSamplingCounter, :) = data.dcV(StartingIndex:StartingIndex-1+OneSweepLength);
             iSamplingCounter = iSamplingCounter + 1;
         end

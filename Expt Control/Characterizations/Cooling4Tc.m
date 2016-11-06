@@ -20,8 +20,8 @@ close all;
 fclose all;
 
 % Connect to the Cryo-Con 22 temperature controler
-TC = deviceDrivers.CryoCon22();
-TC.connect('12');
+TController = deviceDrivers.Lakeshore335();
+TController.connect('2');
 Lockin = deviceDrivers.SRS830();
 Lockin.connect('9');
 
@@ -40,9 +40,9 @@ FileName = strcat('Cool4Tc_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat');
 j=1;
 pause on;
 figure(234);
-while true
+while j < 3600*2*12
     CoolLogData.time(j) = etime(clock, StartTime);
-    CoolLogData.T(j) = TC.temperatureA(); %QueryT_CryoCon();
+    CoolLogData.T(j) = TController.get_temperature('A');
     %LockinV = QueryXY_Lockin(9);
     CoolLogData.X(j) = Lockin.X; CoolLogData.Y(j) = Lockin.Y;
     %CoolLogData(j,:) = [etime(clock, StartTime) TC.temperatureA() Lockin.X() Lockin.Y()];
@@ -57,6 +57,6 @@ pause off;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%       Clear     %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-TC.disconnect(); Lockin.disconnect();
-clear Lockin TC;
+TController.disconnect(); Lockin.disconnect();
+clear Lockin TController;
 end

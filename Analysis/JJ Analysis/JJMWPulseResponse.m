@@ -8,6 +8,7 @@ iCounter = 1;
 iSamplingCounter = 1;
 iThresholdCounter = 0;
 for k = 1:length(dClock)
+    if dClock(k) > 1
         % MovingAvg is a function to replace smooth moving avg
         if max(data.dcV(StartingIndex-1+TrimmedIndex:StartingIndex-1+floor(OneSweepLength/2))) > VThreshold
             SwitchingTime = GetCriticalCurrent(data.OneTime(TrimmedIndex:floor(end/2)), data.dcV(StartingIndex-1+TrimmedIndex:StartingIndex-1+floor(OneSweepLength/2)), SmoothSpan);

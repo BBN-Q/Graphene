@@ -7,12 +7,16 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function data = NIDAQ_dcIV_vs_IBiasSweep1(NiDaq, BiasRange, SweepFreq, TotalTime, SamplingFreq, InitialWaitTime)
+function data = NIDAQ_dcIV_vs_IBiasSweep1(TotalTime, SamplingFreq, InitialWaitTime)
 pause on;
-SweepGen = deviceDrivers.TekAFG3102();
-SweepGen.connect('11');
-Lockin = deviceDrivers.SRS865();
-Lockin.connect('4');
+%SweepGen = deviceDrivers.TekAFG3102();
+%SweepGen.connect('11');
+%Lockin = deviceDrivers.SRS865();
+%Lockin.connect('4');
+NiDaq = daq.createSession('ni');
+addAnalogInputChannel(NiDaq,'Dev2', 0, 'Voltage');
+addAnalogInputChannel(NiDaq,'Dev2', 1, 'Voltage');
+addTriggerConnection(NiDaq,'external','Dev2/PFI0','StartTrigger');
 NiDaq.Rate = SamplingFreq;
 NiDaq.NumberOfScans = floor(TotalTime*SamplingFreq)+1;
 
@@ -23,8 +27,8 @@ function plot_data()
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-SweepGen.high1 = BiasRange(2); SweepGen.low1 = BiasRange(1);
-SweepGen.frequency1 = SweepFreq;
+%SweepGen.high1 = BiasRange(2); SweepGen.low1 = BiasRange(1);
+%SweepGen.frequency1 = SweepFreq;
 pause(InitialWaitTime);
 [voltage1, time] = NiDaq.startForeground;
 data.dcV = voltage1'; data.time = time';
@@ -34,6 +38,7 @@ data.dcV = voltage1'; data.time = time';
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
 
 % removeConnection(NiDaq, 1); removeChannel(NiDaq, 1); 
-SweepGen.disconnect(); Lockin.disconnect();
-pause off; clear voltage1 time Lockin SweepGen;
+%SweepGen.disconnect(); %Lockin.disconnect();
+removeConnection(NiDaq,1); removeChannel(NiDaq,2); removeChannel(NiDaq,1);
+pause off; clear voltage1 time Lockin SweepGen NiDaq;
 end

@@ -7,10 +7,10 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function data = SPD_GPIBiReset_mwFreq(TotalDuration, Vset, Vreset, AmplifiedVthreshold, mwFreqList, ResetTime, WaitTime)
+function data = SPD_GPIBiReset_mwFreq(TotalDuration, Vset, Vreset, AmplifiedVthreshold, mwFreqList, ResetTime)
 pause on;
-DVM = deviceDrivers.Keithley2400();
-DVM.connect('23');
+DVM = deviceDrivers.Keysight34410A();
+DVM.connect('22');
 Lockin = deviceDrivers.SRS865();
 Lockin.connect('4');
 mwSource = deviceDrivers.AgilentN5183A();

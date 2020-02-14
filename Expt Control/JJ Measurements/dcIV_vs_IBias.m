@@ -17,7 +17,7 @@ Lockin.connect('4');
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
 figure(799); 
 function plot_data()
-    clf; plot(BiasList(1:k), data.dcV, '.-'); grid on;
+    clf; figure(799); plot(BiasList(1:k), data.dcV, '.-'); grid on;
     xlabel('V_{bias} (V)'); ylabel('dc V_{JJ} (V)');
 end
 

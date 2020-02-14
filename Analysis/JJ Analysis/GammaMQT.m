@@ -1,4 +1,4 @@
-function GammaMQT = GammaMQT(Ib, Ic, RN, ETH)
+function [GammaMQT, JJProps] = GammaMQT(Ib, Ic, RN, ETH)
 %Gives JJ macroscopic quantum tunneling rate as a function of bias current 
 %(Ib) for a given critical current (Ic), normal metal resistance (RN), 
 %Thouless energy (ETH), and temperature (T)
@@ -18,5 +18,17 @@ EJ0=0.5*hbar*Ic/e; %Josephson Coupling Energy (J)
 DU=2*EJ0*(sqrt(1-gammaJJ.^2)-gammaJJ.*acos(gammaJJ)); %Barrier height (J)
 
 GammaMQT=12*wp.*sqrt(3*DU./(2*pi*hbar*wp)).*exp(-7.2*(1+.87./Q).*DU./(hbar*wp)); %MQT switching rate
+
+JJProps.Ic = Ic;
+JJProps.RN = RN;
+JJProps.ETH=ETH;
+JJProps.gammaJJ = gammaJJ;
+JJProps.CJJ = CJJ;
+JJProps.wp0 = wp0;
+JJProps.wp = wp;
+JJProps.Q = Q;
+JJProps.EJ0 = EJ0;
+JJProps.DU = DU;
+JJProps.GammaMQT = GammaMQT;
 
 end

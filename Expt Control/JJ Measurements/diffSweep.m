@@ -24,15 +24,15 @@ eval(['Lockin.write(''SCNDC BEGIN,' num2str(BiasRange(1)) 'V'');']);
 eval(['Lockin.write(''SCNDC END,' num2str(BiasRange(2)) 'V'');']);
 eval(['Lockin.write(''CAPTURELEN ' num2str(CaptureLength) ''');']);
 eval(['Lockin.write(''CAPTURERATE ' num2str(CaptureRateDenominator) ''');']);
-data.fs = str2num(Lockin.query('CAPTURERATE?'));
-TotalTime = CaptureLength*256 / data.fs;
+data.fs = str2num(Lockin.query('CAPTURERATE?'))
+TotalTime = CaptureLength*256 / data.fs
 Lockin.write('SCNENBL OFF');
 Lockin.write('SCNENBL ON');
 
 Lockin.write('SCNRST');
 Lockin.DC = BiasRange(1);
 pause(InitialWaitTime);
-Lockin.write('SCNRUN; CAPTURESTART ONE, OFF');
+Lockin.write('SCNRUN; CAPTURESTART ONE, IMM');
 pause(1.05*TotalTime);
 if str2num(Lockin.query('CAPTURESTAT?')) == 6
     eval(['Lockin.write(''CAPTUREGET? 0,' num2str(CaptureLength) ''');']);

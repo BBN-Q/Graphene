@@ -35,7 +35,7 @@ for j=1:length(BFieldList)
     Lockin.DC = BiasList(1);
     pause on;
     disp(['Magnetic field value = ' num2str(BFieldList(j)*1e4) ' G'])
-    disp(['Time now is ' datestr(clock) 'Start time was ' datestr(StartTime) '; Collecting data for ' num2str(TotalTime/60) ' mins'] )
+    disp(['Time now is ' datestr(clock) ' Start time was ' datestr(StartTime) '; Collecting data for ' num2str(TotalTime/60) ' mins'] )
     pause(InitialWaitTime);
     for k=1:length(BiasList)
         Lockin.DC = BiasList(k);

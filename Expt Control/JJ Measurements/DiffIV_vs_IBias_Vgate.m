@@ -31,10 +31,14 @@ function plot_data()
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
+GateCtrller.value = 0;
+pause(InitialWaitTime);
 for j=1:length(VgateList)
     GateCtrller.value = VgateList(j);
     Lockin.DC = BiasList(1);
     pause(InitialWaitTime);
+    disp(['Gate Voltage = ' num2str(VgateList(j)) ' V'])
+    disp(['Time now is ' datestr(clock)])
     for k=1:length(BiasList)
         Lockin.DC = BiasList(k);
         pause(measurementWaitTime);

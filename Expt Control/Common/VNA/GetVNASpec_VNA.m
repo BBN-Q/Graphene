@@ -11,7 +11,8 @@
 function spec = GetVNASpec_VNA()
 
 VNA = deviceDrivers.AgilentE8363C();
-VNA.connect('192.168.5.101')
+VNA.connect('128.33.89.251')   %old VNA
+%VNA.connect('16')
 [spec.Freq spec.S] = VNA.getTrace();
 VNA.disconnect();
 clear VNA;

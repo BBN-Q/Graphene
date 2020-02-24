@@ -7,49 +7,52 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = DiffIV_vs_IBias_BField(BiasList, BFieldList, InitialWaitTime, measurementWaitTime)
-StartTime = clock;
-FileName = strcat('Backup', '.mat');
-pause on;
+function [data] = dcIV_vs_IBias_MWFreq(BiasList, FreqList, dcAmplification, InitialWaitTime, measurementWaitTime)
+%GateCtrller = deviceDrivers.Keithley2400();
+%GateCtrller.connect('23');
 Lockin = deviceDrivers.SRS865();
 Lockin.connect('4');
-TotalTime = length(BiasList)*length(BFieldList)*measurementWaitTime;
+DVM=deviceDrivers.Keysight34410A();
+DVM.connect('22');
+MicrowaveSource = deviceDrivers.AgilentN5183A();
+MicrowaveSource.connect('19');
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
-function plot_data() 
+function plot_data()
     figure(899);
-    clf; plot(BiasList(1:k), data.X(j,1:k),'.-'); grid on;
-    xlabel('V_{bias} (V)'); ylabel('dV/dI (\Omega)');
+    clf; plot(BiasList(1:k), data.dcV(j,1:k), '.-'); grid on;
+    xlabel('V_{bias} (V)'); ylabel('dc V_{JJ} (V)');
     if k == length(BiasList) && j>1
         figure(898);
-        clf; imagesc(data.X); grid on;
+        clf; imagesc(data.dcV); grid on;
         xlabel('I_{bias} (A)'); ylabel('V_{gate} (V)');
     end
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-for j=1:length(BFieldList)
-    if SmallBFieldController(BFieldList(j)*1e4) ~= 1
-        sprintf('check field value at B[T] = %f', BFieldList(j));
-    end
+StartTime = clock;
+TotalTime = length(BiasList)*length(FreqList)*measurementWaitTime;
+for j=1:length(FreqList)
+    MicrowaveSource.frequency = FreqList(j)*1e-9;
     Lockin.DC = BiasList(1);
-    pause on;
-    disp(['Magnetic field value = ' num2str(BFieldList(j)*1e4) ' G'])
+    disp(['Magnetic field value = ' num2str(FreqList(j)*1e-9) ' GHz'])
     disp(['Time now is ' datestr(clock) ' Start time was ' datestr(StartTime) '; Collecting data for ' num2str(TotalTime/60) ' mins'] )
+    pause on;
     pause(InitialWaitTime);
     for k=1:length(BiasList)
         Lockin.DC = BiasList(k);
+        pause on;
         pause(measurementWaitTime);
-        data.X(j, k) = Lockin.X; data.Y(j, k) = Lockin.Y;
-        %data.T(j, k) = str2num(Thermometer.query('RDGK? 5'));
-        save(FileName)
+        data.dcV(j, k) = DVM.value;   
         plot_data()
     end
+    save('backup.mat')
 end
+data.dcV = data.dcV/dcAmplification;
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
 %Keithley.value = 0;
-Lockin.DC = 0;
-Lockin.disconnect();
-pause off; clear Lockin FileName StartTime Thermometer;
+Lockin.DC = 0; GateCtrller.value = 0;
+Lockin.disconnect(); MicrowaveSource.disconnect(); DVM.disconnect(); %Thermometer.disconnect();  GateCtrller.disconnect(); 
+pause off; clear Lockin MicrowaveSource DVM StartTime;
 end

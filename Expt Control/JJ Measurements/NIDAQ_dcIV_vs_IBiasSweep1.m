@@ -14,9 +14,9 @@ pause on;
 %Lockin = deviceDrivers.SRS865();
 %Lockin.connect('4');
 NiDaq = daq.createSession('ni');
-addAnalogInputChannel(NiDaq,'Dev2', 0, 'Voltage');
-addAnalogInputChannel(NiDaq,'Dev2', 1, 'Voltage');
-addTriggerConnection(NiDaq,'external','Dev2/PFI0','StartTrigger');
+addAnalogInputChannel(NiDaq,'Dev1', 0, 'Voltage');
+addAnalogInputChannel(NiDaq,'Dev1', 1, 'Voltage');
+addTriggerConnection(NiDaq,'external','Dev1/PFI0','StartTrigger');
 NiDaq.Rate = SamplingFreq;
 NiDaq.NumberOfScans = floor(TotalTime*SamplingFreq)+1;
 

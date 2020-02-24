@@ -1,4 +1,4 @@
-function SwitchingRate = JJRatefromSwitchDist(Ibias, Counts, dIdt)
+function SwitchingRate = SwitchDist2SwitchRate(Ibias, Counts, dIdt)
 %Takes switching distribution (counts as a function of bias current) and
 %gives the corresponding switching rate as a function of Ibias. dIdt is the
 %scan rate used to get the distribution data.
@@ -12,4 +12,3 @@ for i=1:length(Ibias)
 end
 
 end
-

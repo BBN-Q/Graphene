@@ -2,24 +2,22 @@
 %%%%%%%%%%%%%%%%%%%%%%%%     What and How?      %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Graphene Sweeping Software
-% version 2.0 in July 2016 by BBN Graphene Trio: Jess Crossno, Evan Walsh,
-% and KC Fong
+% version 2.0 in July 2016 by KC Fong
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = DiffIV_vs_IBias_Vgate(BiasList, VgateList, InitialWaitTime, measurementWaitTime)
-StarTime = clock;
+function [data] = DiffIV_vs_IBias_MWFreq(BiasList, FreqList, InitialWaitTime, measurementWaitTime)
+StartTime = clock;
 FileName = strcat('Backup', '.mat');
 pause on;
-GateCtrller = deviceDrivers.Keithley2400();
-GateCtrller.connect('23');
 Lockin = deviceDrivers.SRS865();
 Lockin.connect('4');
-%Thermometer = deviceDrivers.Lakeshore335();
-%Thermometer.connect('12');
+MicrowaveSource = deviceDrivers.AgilentN5183A();
+MicrowaveSource.connect('19');
+TotalTime = length(BiasList)*length(FreqList)*measurementWaitTime;
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
-function plot_data()
+function plot_data() 
     figure(899);
     clf; plot(BiasList(1:k), data.X(j,1:k),'.-'); grid on;
     xlabel('V_{bias} (V)'); ylabel('dV/dI (\Omega)');
@@ -31,14 +29,14 @@ function plot_data()
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-GateCtrller.value = 0;
-pause(InitialWaitTime);
-for j=1:length(VgateList)
-    GateCtrller.value = VgateList(j);
+for j=1:length(FreqList)
+    MicrowaveSource.frequency = FreqList(j)*1e-9;
     Lockin.DC = BiasList(1);
+    pause on;
+    disp(['Microwave Frequency = ' num2str(FreqList(j)*1e-9) ' GHz'])
+    disp(['Time now is ' datestr(clock) ' Start time was ' datestr(StartTime) '; Collecting data for ' num2str(TotalTime/60) ' mins'] )
     pause(InitialWaitTime);
-    disp(['Gate Voltage = ' num2str(VgateList(j)) ' V'])
-    disp(['Time now is ' datestr(clock)])
+    %MicrowaveSource.output = 1;
     for k=1:length(BiasList)
         Lockin.DC = BiasList(k);
         pause(measurementWaitTime);
@@ -47,11 +45,12 @@ for j=1:length(VgateList)
         save(FileName)
         plot_data()
     end
+    %MicrowaveSource.output = 0;
 end
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
 %Keithley.value = 0;
-Lockin.DC = 0; GateCtrller.value = 0;
-Lockin.disconnect(); GateCtrller.disconnect(); %Thermometer.disconnect();
-pause off; clear Lockin FileName StarTime GateCtrller Thermometer;
+Lockin.DC = 0;
+Lockin.disconnect(); MicrowaveSource.disconnect();
+pause off; clear Lockin FileName StartTime Thermometer;
 end

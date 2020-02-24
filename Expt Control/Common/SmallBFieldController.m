@@ -18,20 +18,22 @@ function ReachingTarget = SmallBFieldController(field)  % in Gauss, persistent h
     MagController = deviceDrivers.Keithley2400();
     MagController.connect('24');
     
-    pause on;
     TargetCurrent = field/421;  % current in Ampere
     InitialCurrent = MagController.value;
     Totaltime = abs(TargetCurrent-InitialCurrent)/0.064;    % total (min) ramp time in second at (max) charging rate
-    CurrentList = linspace(InitialCurrent, TargetCurrent, floor(Totaltime*10)+2);
+    CurrentList = linspace(InitialCurrent, TargetCurrent, floor(Totaltime*10)+2)
     for k = 1:length(CurrentList)-1
         eval(sprintf('MagController.value = %.4f;',CurrentList(k+1))); %MagController.value = CurrentList(k+1)
-        pause(0.1);
+        pause on;
+        pause(1);
+        pause off;
     end
-    pause off;
     ReachingTarget = 0;
-    if abs(MagController.value - TargetCurrent) < 0.0001
+    pause on; pause(3); pause off; % arbitarily chosen settling time
+    if abs(MagController.value - TargetCurrent) < 0.000237*5 % corresponding to 0.5 Gauss
         ReachingTarget = 1;
-    else sprintf('Error in setting magnetic field');
+    else sprintf('Error in setting magnetic field')
     end
+    MagController.value
     MagController.disconnect();
 end

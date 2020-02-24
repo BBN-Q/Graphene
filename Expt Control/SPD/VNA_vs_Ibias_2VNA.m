@@ -7,36 +7,36 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = dcIV_vs_IBias(BiasList, dcAmplification, InitialWaitTime, measurementWaitTime)
+function [data] = VNA_vs_Ibias_2VNA(VbiasList, InitialWaitTime)
 pause on;
-DVM=deviceDrivers.Keysight34410A();
-DVM.connect('22');
 Lockin = deviceDrivers.SRS865();
 Lockin.connect('4');
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
-figure(799); 
 function plot_data()
-    clf; figure(799); plot(BiasList(1:k), data.dcV, '.-'); grid on;
-    xlabel('V_{bias} (V)'); ylabel('dc V_{JJ} (V)');
+    figure(799); clf; plot(VbiasList(1:k), data.X, '.-'); grid on;
+    xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.DC = BiasList(1);
+Lockin.DC = VbiasList(1);
 pause(InitialWaitTime);
-for k=1:length(BiasList)
-    Lockin.DC = BiasList(k);
-    pause(measurementWaitTime);
-    data.dcV(k) = DVM.value;
+for k=1:length(VbiasList)
+    Lockin.DC = VbiasList(k);
+    datetime('now')
+    sprintf('The %dth data point', k)
+    result = GetVNASpec_VNA();
+    result2 = GetVNASpec_VNA_old();
+    data.SProbe(k,:) = result.S;
+    data.SInput(k,:) = result2.S;
+    data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
     save('backup.mat')
     plot_data()
 end
-data.dcV = data.dcV/dcAmplification;
+data.Freq = result.Freq;
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
-%Keithley.value = 0;
 Lockin.DC = 0;
-%Lockin.disconnect();
-DVM.disconnect();
-pause off; clear Lockin DVM;
+Lockin.disconnect();
+pause off; clear result Lockin result2;
 end

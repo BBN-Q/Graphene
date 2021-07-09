@@ -4,36 +4,37 @@
 % Graphene Sweeping Software
 % version 2.0 in July 2016 by BBN Graphene Trio: Jess Crossno, Evan Walsh,
 % and KC Fong
+% adapted by Caleb Fried and Bevin Huang May 2021
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = VNA_vs_Vgate(VgateList, InitialWaitTime, measurementWaitTime)
+function [data] = DiffIV_vs_Ibias_2_lockins(BiasList, InitialWaitTime, measurementWaitTime)
 pause on;
-GateController = deviceDrivers.Keithley2400();
-GateController.connect('23');
+Lockin1 = deviceDrivers.SRS865();
+Lockin1.connect('4');
+Lockin2 = deviceDrivers.SRS865();
+Lockin2.connect('9');
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
 function plot_data()
-    figure(737); clf; imagesc(20*log10(abs(data.S)));
-    %xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
+    figure(799); clf; plot(BiasList(1:k), data.X, '.-'); grid on;
+    xlabel('V_{bias} (V)'); ylabel('Lockin1 X (V)');
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-GateController.value = VgateList(1);
+Lockin1.DC = BiasList(1);
 pause(InitialWaitTime);
-for k=1:length(VgateList)
-    k
-    GateController.value = VgateList(k);
-    %pause(measurementWaitTime);
-    % data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
-    result = GetVNASpec_VNA();
-    data.S(k,:) = result.S;
+for k=1:length(BiasList)
+    Lockin1.DC = BiasList(k);
+    pause(measurementWaitTime);
+    data.X(k) = Lockin1.X; data.Y(k) = Lockin1.Y;
+    data.ExcitMonitor_X(k) = Lockin2.X; data.ExcitMonitor_Y(k) = Lockin2.Y;
+    save('backup.mat')
     plot_data()
 end
-data.Freq = result.Freq;
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
-GateController.value = 0;
-GateController.disconnect();
-pause off; clear result GateController;
+Lockin1.DC = 0;
+Lockin1.disconnect(); 
+pause off; clear Lockin1;
 end

@@ -7,7 +7,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = VNA_vs_JPAParameters_TestPower(TestPowerList, AveragingNumberList, JPAPumpPowerList, JPAPumpFreqList, JPAFluxBiasList, InitialWaitTime)
+function [data] = VNA_vs_FluxBias_PumpFreq(FluxBiasList, FreqList_Hz, InitialWaitTime)
 pause on;
 PumpSource = deviceDrivers.AgilentN5183A();
 PumpSource.connect('19');
@@ -15,26 +15,33 @@ BiasSource = deviceDrivers.Keithley2400();
 BiasSource.connect('24');
 %BiasSource = deviceDrivers.YokoGS200();
 %BiasSource.connect('2');
+FreqList = FreqList_Hz*1e-9;
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-for k = 1:length(JPAPumpPowerList)
-    sprintf('Set to %e A, and pump frequency and power at %e GHz and %e dBm, respectively', JPAFluxBiasList(k), JPAPumpFreqList(k)*1e-9, JPAPumpPowerList(k))
-    PumpSource.frequency = JPAPumpFreqList(k)*1e-9;
-    PumpSource.power = JPAPumpPowerList(k);
-    BiasSource.value = JPAFluxBiasList(k);
-    result = VNA_vs_TestPower(TestPowerList, AveragingNumberList, InitialWaitTime);
-    data.S(k,:,:) = result.S;
-    PumpSource.output = '0';
-    pause on; 
+BiasSource.value = FluxBiasList(1);
+PumpSource.frequency = FreqList(1); 
+PumpSource.output = '1';
+pause(InitialWaitTime);
+for k=1:length(FluxBiasList)
+    BiasSource.value = FluxBiasList(k);
     pause(InitialWaitTime);
+    for j = 1:length(FreqList)
+        disp(datetime('now'))
+        sprintf('The %dth outer loop with flux bias at %e A and the %dth inner loop with freq at %e GHz', k, FluxBiasList(k), j, FreqList(j))
+        PumpSource.frequency = FreqList(j);
+        result = GetVNASpec_VNA();
+        data.S(k,j,:) = result.S;
+    end
+    data.Freq = result.Freq;
+    PumpSource.output = '0';
     result = GetVNASpec_VNA();
     data.S0(k,:) = result.S;
     PumpSource.output = '1';
 end
-data.Freq = result.Freq;
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
 pause off;
+BiasSource.value = min(abs(FluxBiasList));
 PumpSource.disconnect(); BiasSource.disconnect();
-clear PumpSource total_num k Yoko
+clear k j PumpSource result Yoko;
 end

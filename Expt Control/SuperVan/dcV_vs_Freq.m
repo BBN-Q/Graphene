@@ -7,34 +7,39 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = VNA_vs_Vgate(VgateList, InitialWaitTime, measurementWaitTime)
+function [data] = dcV_vs_Freq(FreqList, dcAmplification, InitialWaitTime, measurementWaitTime)
 pause on;
-GateController = deviceDrivers.Keithley2400();
-GateController.connect('23');
-Lockin = deviceDrivers.SRS865();
-Lockin.connect('4');
+DVM=deviceDrivers.Keysight34410A();
+DVM.connect('22');
+MicrowaveSource = deviceDrivers.AgilentN5183A();
+MicrowaveSource.connect('19');
+MicrowaveSource.output = 1;
+FreqList = FreqList*1e-9; % input command line unit is GHz
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
+figure(799); 
 function plot_data()
-    figure(737); clf; imagesc(20*log10(abs(data.S)));
-    %xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
+    clf; figure(799); plot(FreqList(1:k), data.dcV, '.-'); grid on;
+    xlabel('Freq. (Hz)'); ylabel('dc V_{JJ} (V)');
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-GateController.value = VgateList(1);
+MicrowaveSource.frequency = FreqList(1);
 pause(InitialWaitTime);
-for k=1:length(VgateList)
-    GateController.value = VgateList(k);
+for k=1:length(FreqList)
+    MicrowaveSource.frequency = FreqList(k);
     pause(measurementWaitTime);
-    result = GetVNASpec_VNA();
-    data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
-    data.S(k,:) = result.S;
+    data.dcV(k) = DVM.value;
+    %save('backup.mat')
     plot_data()
 end
-data.Freq = result.Freq;
+data.dcV = data.dcV/dcAmplification;
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
-GateController.value = 0;
-GateController.disconnect();
-pause off; clear result GateController;
+%Keithley.value = 0;
+
+
+MicrowaveSource.disconnect();
+DVM.disconnect();
+pause off; clear MicrowaveSource DVM;
 end

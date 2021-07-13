@@ -6,25 +6,17 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function value = AMI430Ctrller()
+function value = AMI430StatusQuery()
 
 % Find a serial port object.
-obj1 = instrfind('Type', 'serial', 'Port', 'COM3', 'Tag', '');
-
-% Create the serial port object if it does not exist
-% otherwise use the object that was found.
-if isempty(obj1)
-    obj1 = serial('COM3');
-else
-    fclose(obj1);
-    obj1 = obj1(1);
-end
+obj1 = tcpip('128.33.89.45', 7180);
 
 % Connect to instrument object, obj1.
 fopen(obj1);
 % Configure instrument object, obj1.
-set(obj1, 'BaudRate', 115200);
-set(obj1, 'FlowControl', 'hardware');
-fprintf(obj1, '%s\r\n', 'ZERO');
-
+%fprintf(obj1, '%s\n', 'ZERO');
+out = query(obj1, 'STATE?')
+value = str2num(out);
+fclose(obj1);
+delete(obj1);
 end

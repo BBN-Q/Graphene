@@ -7,29 +7,30 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = VNA_vs_FluxBias(BiasList, InitialWaitTime, measurementWaitTime)
+function [data] = DiffIV_vs_IBias_evaporative(BiasList, InitialWaitTime, measurementWaitTime)
 pause on;
-%Yoko = deviceDrivers.YokoGS200();
-%Yoko.connect('2');
-BiasSource = deviceDrivers.Keithley2400();
-BiasSource.connect('24');
+Lockin = deviceDrivers.SRS865();
+Lockin.connect('9');
+
+%%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
+function plot_data()
+    figure(799); clf; plot(BiasList(1:k), data.R, '.-'); grid on;
+    xlabel('V_{bias} (V)'); ylabel('Lockin R (V)');
+end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-BiasSource.value = BiasList(1);
+Lockin.DC = BiasList(1);
 pause(InitialWaitTime);
 for k=1:length(BiasList)
-    disp(['Time now is ' datestr(clock)])
-    sprintf('The %d data point with current bias = %e A', k, BiasList(k))
-    BiasSource.value = BiasList(k);
+    Lockin.DC = BiasList(k);
     pause(measurementWaitTime);
-    result = GetVNASpec_VNA();
-    data.S(k,:) = result.S;
+    data.R(k) = Lockin.R; data.theta(k) = Lockin.theta;
     save('backup.mat')
+    plot_data()
 end
-data.Freq = result.Freq;
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
-BiasSource.value = 0;
-BiasSource.disconnect();
-pause off; clear result Yoko BiasSource;
+Lockin.DC = 0;
+Lockin.disconnect(); 
+pause off; clear Lockin;
 end

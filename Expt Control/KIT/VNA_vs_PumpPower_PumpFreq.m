@@ -27,6 +27,9 @@ for k=1:length(FreqList)
         result = GetVNASpec_VNA();
         data.S(k,j,:) = result.S;
     end
+    if (mod(k, 1000)==0)
+        save('backup.mat');
+    end
 end
 data.Freq = result.Freq;
 PumpSource.output = '0';

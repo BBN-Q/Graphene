@@ -10,7 +10,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function psd = GetPSD_SpecAnalyzer()
 SpecAnalyzer = deviceDrivers.AgilentN9020A();
-SpecAnalyzer.connect('128.33.89.217');
+SpecAnalyzer.connect('128.33.89.34');    % last '128.33.89.217'
 [freq, spec] = SpecAnalyzer.SAGetTrace();
 SpecAnalyzer.disconnect();
 clear SpecAnalyzer

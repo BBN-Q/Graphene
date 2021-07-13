@@ -7,34 +7,33 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = VNA_vs_Vgate(VgateList, InitialWaitTime, measurementWaitTime)
+function [data] = DiffIV_vs_Iac(BiasList, InitialWaitTime, measurementWaitTime)
 pause on;
-GateController = deviceDrivers.Keithley2400();
-GateController.connect('23');
 Lockin = deviceDrivers.SRS865();
 Lockin.connect('4');
+LockinCurrent = deviceDrivers.SRS865();
+LockinCurrent.connect('9');
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
 function plot_data()
-    figure(737); clf; imagesc(20*log10(abs(data.S)));
-    %xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
+    figure(799); clf; plot(BiasList(1:k), data.X, '.-'); grid on;
+    xlabel('x_{bias} '); ylabel('Lockin X (V)');
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-GateController.value = VgateList(1);
+Lockin.sineAmp = BiasList(1);
 pause(InitialWaitTime);
-for k=1:length(VgateList)
-    GateController.value = VgateList(k);
+for k=1:length(BiasList)
+    Lockin.sineAmp = BiasList(k);
     pause(measurementWaitTime);
-    result = GetVNASpec_VNA();
     data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
-    data.S(k,:) = result.S;
+    data.IX(k) = LockinCurrent.X; data.IY(k) = LockinCurrent.Y;
+    %save('backup.mat')
     plot_data()
 end
-data.Freq = result.Freq;
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
-GateController.value = 0;
-GateController.disconnect();
-pause off; clear result GateController;
+Lockin.sineAmp = BiasList(1);
+Lockin.disconnect(); LockinCurrent.disconnect();
+pause off; clear Lockin;
 end

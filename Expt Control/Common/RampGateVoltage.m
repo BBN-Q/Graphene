@@ -11,7 +11,7 @@
 function result = RampGateVoltage(TargetVolt, RampSteps)
 maxVoltage = 15;
 %assert(abs(InitVolt) < maxVoltage)
-assert(abs(TargetVolt) < maxVoltage)
+assert(abs(TargetVolt) < maxVoltage) 
 GateController = deviceDrivers.Keithley2400();
 GateController.connect('23');
 

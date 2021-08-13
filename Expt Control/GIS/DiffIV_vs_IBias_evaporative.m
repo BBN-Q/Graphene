@@ -7,7 +7,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = DiffIV_vs_IBias_evaporative(BiasList, InitialWaitTime, measurementWaitTime)
+function [data] = DiffIV_vs_IBias_evaporative(BiasList, ExcitVolt, InitialWaitTime, measurementWaitTime)
 pause on;
 Lockin = deviceDrivers.SRS865();
 Lockin.connect('9');
@@ -19,6 +19,7 @@ function plot_data()
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
+Lockin.sineAmp = ExcitVolt;
 Lockin.DC = BiasList(1);
 pause(InitialWaitTime);
 for k=1:length(BiasList)

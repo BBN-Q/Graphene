@@ -16,9 +16,9 @@ GateController.connect('23');
 %Yoko = deviceDrivers.YokoGS200();
 %Yoko.connect('2');
 Lockin = deviceDrivers.SRS865();
-Lockin.connect('4');
+Lockin.connect('9');
 LockinCurrent = deviceDrivers.SRS865();
-LockinCurrent.connect('9');
+LockinCurrent.connect('4');
 
 %Vxx2 lockin 
 % Lockin2 = deviceDrivers.SRS830();
@@ -30,12 +30,12 @@ function plot_data()
 %     hold on; plot(VgateList(1:k), data.X2, '.-'); 
 %     legend('X1', 'X2');
     xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
-    figure(789); clf; plot(VgateList(1:k), data.IX); grid on;
-    xlabel('V_{bias} (V)'); ylabel('Lockin Current (A)');
-    figure(779); clf; plot(VgateList(1:k), data.X./data.IX); grid on;
-    xlabel('V_{bias} (V)'); ylabel('Resistance (\Omega)');
-    figure(899); clf; plot(VgateList(1:k), data.LeakCurrent, '.-'); grid on;
-    xlabel('V_{bias} (V)'); ylabel('LeakCurrent (A)');
+%     figure(789); clf; plot(VgateList(1:k), data.IX); grid on;
+%     xlabel('V_{bias} (V)'); ylabel('Lockin Current (A)');
+%     figure(779); clf; plot(VgateList(1:k), data.X./data.IX); grid on;
+%     xlabel('V_{bias} (V)'); ylabel('Resistance (\Omega)');
+    figure(899); clf; plot(VgateList(1:k), 1E9*data.LeakCurrent, '.-'); grid on;
+    xlabel('V_{bias} (V)'); ylabel('LeakCurrent (nA)');
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%

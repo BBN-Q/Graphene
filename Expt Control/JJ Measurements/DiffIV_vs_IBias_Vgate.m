@@ -14,7 +14,7 @@ pause on;
 GateCtrller = deviceDrivers.Keithley2400();
 GateCtrller.connect('23');
 Lockin = deviceDrivers.SRS865();
-Lockin.connect('4');
+Lockin.connect('9');
 %Thermometer = deviceDrivers.Lakeshore335();
 %Thermometer.connect('12');
 
@@ -25,7 +25,7 @@ function plot_data()
     xlabel('V_{bias} (V)'); ylabel('dV/dI (\Omega)');
     if k == length(BiasList) && j>1
         figure(898);
-        clf; imagesc(data.X); grid on;
+        clf; imagesc(VgateList(1:j), BiasList, data.X(1:j,:)); grid on;
         xlabel('I_{bias} (A)'); ylabel('V_{gate} (V)');
     end
 end

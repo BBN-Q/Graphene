@@ -7,10 +7,13 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = DiffIV_vs_IBias_evaporative(BiasList, ExcitVolt, InitialWaitTime, measurementWaitTime)
+function [data] = DiffIV_vs_VBias(BiasList, InitialWaitTime, measurementWaitTime)
 pause on;
 Lockin = deviceDrivers.SRS865();
-Lockin.connect('9');
+Lockin.connect('4');
+LockinI = deviceDrivers.SRS865();
+LockinI.connect('9');
+
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
 function plot_data()
@@ -19,19 +22,19 @@ function plot_data()
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.sineAmp = ExcitVolt;
-Lockin.DC = BiasList(1);
+LockinI.DC = BiasList(1);
 pause(InitialWaitTime);
 for k=1:length(BiasList)
-    Lockin.DC = BiasList(k);
+    LockinI.DC = BiasList(k);
     pause(measurementWaitTime);
     data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
+    data.IX(k) = LockinI.X; data.IY(k) = LockinI.Y;
     save('backup.mat')
     plot_data()
 end
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.DC = 0;
-Lockin.disconnect(); 
-pause off; clear Lockin;
+LockinI.DC = 0;
+Lockin.disconnect();  LockinI.disconnect(); 
+pause off; clear Lockin LockinI; 
 end

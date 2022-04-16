@@ -28,16 +28,15 @@ pause(InitialWaitTime);
 for k=1:length(VgateList)
     GateController.value = VgateList(k);
     pause(measurementWaitTime);
-    data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
     result = GetVNASpec_VNA();
+    data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
     data.S(k,:) = result.S;
     plot_data()
 end
 data.Freq = result.Freq;
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
-%Keithley.value = 0;
-GateController.value = 0;
-GateController.disconnect();
+%GateController.value = 0;
+GateController.disconnect(); Lockin.disconnect();
 pause off; clear result Lockin GateController;
 end

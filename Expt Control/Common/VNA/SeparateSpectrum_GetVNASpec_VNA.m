@@ -21,7 +21,8 @@ end
 VNA.disconnect();
 clear VNA;
 
-figure(123); clf; plot(spec.Freq*1e-9, 20*log10(abs(spec.S)), '.-'); grid on;
+%plot left and right side of spectrum separately
+figure(123); clf; plot(1e-9*spec.Freq(1:1024), 20*log10(abs(spec.S(1:1024)))); grid on;
+figure(124); clf; plot(1e-9*spec.Freq(1025:2048), 20*log10(abs(spec.S(1025:2048)))); grid on;
 %xlabel('Frequency (GHz)'); ylabel('S_{11} (dB)');
-xlabel('Frequency (GHz)'); ylabel('S_{21} (dB)'); 
-set(gca, 'fontsize',16); box on; grid on; 
+xlabel('Frequency (GHz)'); ylabel('S_{21} (dB)');

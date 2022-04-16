@@ -7,31 +7,21 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = DiffIV_vs_IBias_evaporative(BiasList, ExcitVolt, InitialWaitTime, measurementWaitTime)
+function [data] = VNA_vs_CapLength(CapLength, InitialWaitTime)
 pause on;
-Lockin = deviceDrivers.SRS865();
-Lockin.connect('9');
-
-%%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
-function plot_data()
-    figure(799); clf; plot(BiasList(1:k), data.X, '.-'); grid on;
-    xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
-end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.sineAmp = ExcitVolt;
-Lockin.DC = BiasList(1);
 pause(InitialWaitTime);
-for k=1:length(BiasList)
-    Lockin.DC = BiasList(k);
-    pause(measurementWaitTime);
-    data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
+for k=1:length(CapLength)
+    input(['Cut the wire to ' num2str(CapLength(k)) ' inches. Press any button to continue after cutting...\n'])
+    datetime('now')
+    sprintf('The %dth data point', k)
+    result = GetVNASpec_VNA();
+    data.S(k,:) = result.S;
     save('backup.mat')
-    plot_data()
 end
+data.Freq = result.Freq;
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.DC = 0;
-Lockin.disconnect(); 
-pause off; clear Lockin;
+pause off; clear result
 end

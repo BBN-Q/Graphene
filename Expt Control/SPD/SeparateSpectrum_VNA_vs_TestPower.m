@@ -7,7 +7,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = VNA_vs_TestPower(PowerList, AveragingNumberList, InitialWaitTime)
+function [data] = SeparateSpectrum_VNA_vs_TestPower(PowerList, AveragingNumberList, InitialWaitTime)
 pause on;
 VNA = deviceDrivers.AgilentE8363C();
 %VNA.connect('16');
@@ -26,9 +26,8 @@ for k=1:length(PowerList)
     VNA.power = PowerList(k);
     VNA.average_counts = AveragingNumberList(k);
     VNA.disconnect();
-    spec = GetVNASpec_VNA();
+    spec = SeparateSpectrum_GetVNASpec_VNA();
     data.S(k,:) = spec.S;
-    save('backup.mat');
 end
 data.Freq = spec.Freq;
 

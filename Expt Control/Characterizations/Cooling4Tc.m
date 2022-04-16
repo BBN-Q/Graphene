@@ -20,10 +20,15 @@ close all;
 fclose all;
 
 % Connect to the Cryo-Con 22 temperature controler
-TController = deviceDrivers.Lakeshore335();
-TController.connect('2');
-Lockin = deviceDrivers.SRS830();
-Lockin.connect('9');
+%TController = deviceDrivers.Lakeshore335();
+%TController.connect('2');
+TController = deviceDrivers.Lakeshore370();
+TController.connect('12');
+
+Lockin = deviceDrivers.SRS865();
+Lockin.connect('4');
+%LockinI = deviceDrivers.SRS865();
+%LockinI.connect('9');
 
 % Initialize variables
 DataInterval = input('Time interval in temperature readout (in second) = ');
@@ -40,11 +45,13 @@ FileName = strcat('Cool4Tc_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat');
 j=1;
 pause on;
 figure(234);
-while j < 3600*2*12
+while j < 3600
     CoolLogData.time(j) = etime(clock, StartTime);
-    CoolLogData.T(j) = TController.get_temperature('A');
+    %CoolLogData.T(j) = TController.get_temperature('A');
+    CoolLogData.T(j) = TController.get_temperature(6);
     %LockinV = QueryXY_Lockin(9);
     CoolLogData.X(j) = Lockin.X; CoolLogData.Y(j) = Lockin.Y;
+    %CoolLogData.IX(j) = LockinI.X; CoolLogData.IY(j) = LockinI.Y;
     %CoolLogData(j,:) = [etime(clock, StartTime) TC.temperatureA() Lockin.X() Lockin.Y()];
     pause(DataInterval);
     save(FileName);
@@ -57,6 +64,7 @@ pause off;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%       Clear     %%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-TController.disconnect(); Lockin.disconnect();
-clear Lockin TController;
+TController.disconnect(); Lockin.disconnect(); 
+%LockinI.disconnect();
+clear Lockin TController LockinI;
 end

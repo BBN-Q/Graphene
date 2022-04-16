@@ -9,9 +9,10 @@
 %%%%%%%%%%%%     CLEAR  and INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function result = RampGateVoltage(TargetVolt, RampSteps)
-maxVoltage = 15;
+maxVoltage = 30;
 %assert(abs(InitVolt) < maxVoltage)
-assert(abs(TargetVolt) < maxVoltage) 
+assert(abs(TargetVolt) < maxVoltage); 
+RampSteps(RampSteps < 1) = 1;
 GateController = deviceDrivers.Keithley2400();
 GateController.connect('23');
 
@@ -35,7 +36,7 @@ for k = 1:length(VList)
     pause(0.5);
     plot_data()
 end
-pause off;
+%pause off;
 GateController.disconnect();
 disp(['Successfully ramped to gate voltage to ', num2str(TargetVolt), ' V at ', datestr(now)])
 

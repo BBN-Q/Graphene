@@ -16,9 +16,9 @@ GateController.connect('23');
 %Yoko = deviceDrivers.YokoGS200();
 %Yoko.connect('2');
 Lockin = deviceDrivers.SRS865();
-Lockin.connect('9');
-LockinCurrent = deviceDrivers.SRS865();
-LockinCurrent.connect('4');
+Lockin.connect('4');
+% LockinCurrent = deviceDrivers.SRS865();
+% LockinCurrent.connect('4');
 
 %Vxx2 lockin 
 % Lockin2 = deviceDrivers.SRS830();

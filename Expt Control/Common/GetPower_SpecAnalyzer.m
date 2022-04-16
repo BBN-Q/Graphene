@@ -8,14 +8,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%     CLEAR  and INITIALIZE PATH     %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function psd = GetPSD_SpecAnalyzer()
+function power = GetPower_SpecAnalyzer()
 SpecAnalyzer = deviceDrivers.AgilentN9020A();
-SpecAnalyzer.connect('128.33.89.213');    % last '128.33.89.34'
+SpecAnalyzer.connect('128.33.89.3');    % last '128.33.89.213'
 [freq, spec] = SpecAnalyzer.SAGetTrace();
 SpecAnalyzer.disconnect();
 clear SpecAnalyzer
 
-psd.Freq = freq; psd.PSD = (0.9495*spec.^2/3e6)';
+power.Freq = freq; power.Spec = spec;
 
-figure(144); clf; semilogy(psd.Freq*1e-9, psd.PSD); grid on;
-xlabel('Frequency (GHz)'); ylabel('S_V (V^2/Hz)');
+figure(145); clf; semilogy(power.Freq*1e-9, power.Spec*1e12); grid on;
+xlabel('Frequency (GHz)'); ylabel('Reflected P_{probe} (pW)');

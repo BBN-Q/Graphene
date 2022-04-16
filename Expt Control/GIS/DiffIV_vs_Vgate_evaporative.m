@@ -7,23 +7,26 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = DiffIV_vs_IBias_evaporative(BiasList, ExcitVolt, InitialWaitTime, measurementWaitTime)
+function [data] = DiffIV_vs_Vbias_evaporative(GateList, InitialWaitTime, measurementWaitTime)
 pause on;
 Lockin = deviceDrivers.SRS865();
 Lockin.connect('9');
+GateSource = deviceDrivers.Keithley2400();
+GateSource.connect('23');
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
 function plot_data()
-    figure(799); clf; plot(BiasList(1:k), data.X, '.-'); grid on;
-    xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
+    figure(799); clf; plot(GateList(1:k), data.X, '.-'); grid on;
+    xlabel('V_{gate} (V)'); ylabel('Lockin X (V)');
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.sineAmp = ExcitVolt;
-Lockin.DC = BiasList(1);
+
+
+GateSource.value = GateList(1);
 pause(InitialWaitTime);
-for k=1:length(BiasList)
-    Lockin.DC = BiasList(k);
+for k=1:length(GateList)
+    GateSource.value = GateList(k);
     pause(measurementWaitTime);
     data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
     save('backup.mat')
@@ -31,7 +34,8 @@ for k=1:length(BiasList)
 end
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.DC = 0;
-Lockin.disconnect(); 
-pause off; clear Lockin;
+clear k
+Lockin.disconnect(); GateSource.disconnect();
+
+pause off; clear Lockin GateSource;
 end

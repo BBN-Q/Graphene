@@ -38,7 +38,7 @@ FileName = strcat('CoolLogR_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat');
 j=1;
 pause on;
 figure(234);
-while j < 60*24*4
+while j < 12*360
     CoolLogData.time(j) = etime(clock, StartTime);
     %CoolLogData.T(j) = TController.get_temperature('A');
     %LockinV = QueryXY_Lockin(9);

@@ -7,31 +7,31 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = DiffIV_vs_IBias_evaporative(BiasList, ExcitVolt, InitialWaitTime, measurementWaitTime)
+function [data] = DC_VBias_IV(VBiasList, InitialWaitTime, measurementWaitTime)
 pause on;
-Lockin = deviceDrivers.SRS865();
-Lockin.connect('9');
+VoltageSource = deviceDrivers.Keithley2400();
+VoltageSource.connect('24');
+CurrentMeas = deviceDrivers.Keysight34410A();
+CurrentMeas.connect('22');
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
 function plot_data()
-    figure(799); clf; plot(BiasList(1:k), data.X, '.-'); grid on;
-    xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
+    figure(799); clf; plot(VBiasList(1:k), data.DMM, '.-'); grid on;
+    xlabel('V_{bias} (V)'); ylabel('V_{DMM} (V)');
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.sineAmp = ExcitVolt;
-Lockin.DC = BiasList(1);
+VoltageSource.value = VBiasList(1);
 pause(InitialWaitTime);
-for k=1:length(BiasList)
-    Lockin.DC = BiasList(k);
+for k=1:length(VBiasList)
+    VoltageSource.value = VBiasList(k);
     pause(measurementWaitTime);
-    data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
-    save('backup.mat')
+    data.DMM(k) = CurrentMeas.value;
+    %save('backup.mat')
     plot_data()
 end
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.DC = 0;
-Lockin.disconnect(); 
-pause off; clear Lockin;
+VoltageSource.disconnect(); CurrentMeas.disconnect();
+pause off;
 end

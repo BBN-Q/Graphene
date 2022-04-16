@@ -7,7 +7,7 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = DiffIV_vs_IBias_Vgate(BiasList, VgateList, InitialWaitTime, measurementWaitTime)
+function [data] = DiffIV_vs_IBias_and_VNA_vsVgate(BiasList, VgateList, InitialWaitTime, measurementWaitTime)
 StarTime = clock;
 FileName = strcat('Backup', '.mat');
 pause on;
@@ -15,6 +15,7 @@ pause on;
 %GateCtrller.connect('23');
 Lockin = deviceDrivers.SRS865();
 Lockin.connect('4');
+ACbias = Lockin.sineAmp;
 %Thermometer = deviceDrivers.Lakeshore335();
 %Thermometer.connect('12');
 
@@ -25,7 +26,7 @@ function plot_data()
     xlabel('V_{bias} (V)'); ylabel('dV/dI (\Omega)');
     if k == length(BiasList) && j>1
         figure(898);
-        clf; imagesc(VgateList(1:j), BiasList, data.X(1:j,:)); grid on;
+        clf; imagesc(BiasList, VgateList(1:j), data.X(1:j,:)); grid on;
         xlabel('I_{bias} (A)'); ylabel('V_{gate} (V)');
     end
 end
@@ -37,12 +38,16 @@ pause on;
 pause(InitialWaitTime);
 for j=1:length(VgateList)
     %GateCtrller.value = VgateList(j);
-    RampGateVoltage(VgateList(j), 1);
+    RampGateVoltage(VgateList(j), 60);
     pause on;
     Lockin.DC = BiasList(1);
+    Lockin.sineAmp = 0;
     pause(InitialWaitTime);
     disp(['Gate Voltage = ' num2str(VgateList(j)) ' V'])
     disp(['Time now is ' datestr(clock)])
+    dummy = GetVNASpec_VNA;
+    data.S(j,:) = dummy.S;
+    Lockin.sineAmp = ACbias;
     for k=1:length(BiasList)
         Lockin.DC = BiasList(k);
         pause(measurementWaitTime);
@@ -52,10 +57,12 @@ for j=1:length(VgateList)
         plot_data()
     end
 end
+data.Freq = dummy.Freq;
+clear dummy
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
 %Keithley.value = 0;
 Lockin.DC = 0; % RampGateVoltage(0, 60);
 Lockin.disconnect(); %GateCtrller.disconnect(); %Thermometer.disconnect();
-pause off; clear Lockin FileName StarTime GateCtrller Thermometer;
+pause off; clear Lockin FileName StarTime GateCtrller Thermometer ACbias;
 end

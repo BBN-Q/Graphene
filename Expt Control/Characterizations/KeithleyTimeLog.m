@@ -7,31 +7,30 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = DiffIV_vs_IBias_evaporative(BiasList, ExcitVolt, InitialWaitTime, measurementWaitTime)
+function [data] = KeithleyTimeLog(points)
 pause on;
-Lockin = deviceDrivers.SRS865();
-Lockin.connect('9');
+Keithley = deviceDrivers.Keithley2400();
+Keithley.connect('24');
 
 %%%%%%%%%%%%%%%%%%%%%       PLOT DATA     %%%%%%%%%%%%%%%%%%%%%%%%
 function plot_data()
-    figure(799); clf; plot(BiasList(1:k), data.X, '.-'); grid on;
-    xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
+    figure(799); clf; plot(data.time, data.Vmeas, '.-'); grid on;
+    xlabel('Time (s)'); ylabel('V_{meas} (V)');
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.sineAmp = ExcitVolt;
-Lockin.DC = BiasList(1);
-pause(InitialWaitTime);
-for k=1:length(BiasList)
-    Lockin.DC = BiasList(k);
-    pause(measurementWaitTime);
-    data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
-    save('backup.mat')
+
+StartTime = clock;
+
+for k=1:points
+    data.time(k)=etime(clock, StartTime);
+    data.Vmeas(k)=Keithley.value;
+    pause(0.2);
+    %save('backup.mat')
     plot_data()
 end
 
 %%%%%%%%%%%%%%%%%%%%    BACK TO DEFAULT, CLEAN UP     %%%%%%%%%%%%%%%%%%%%%%%%%
-Lockin.DC = 0;
-Lockin.disconnect(); 
-pause off; clear Lockin;
+Keithley.disconnect();
+pause off;
 end

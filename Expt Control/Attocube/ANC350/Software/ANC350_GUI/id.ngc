@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- $Id: id.ngc,v 1.2 2015/07/16 17:29:22 trurl Exp $ -->
+<Panel Name="ANC350Res ID" Icon="edit.xpm" >
+    <Widget Type="Box" Style="Flat" X="0" Y="0" Align="Top Left"  >
+        <Widget Type="Label"  Caption="Serial Number"   X="0" Y="0" Alignment="Left"  />
+        <Widget Type="Edit"   Caption=""                X="1" Y="0" Address="0x66F" Width="2" Display="Serial" ReadOnly="1" />
+        <Widget Type="Label"  Caption="Harware ID"      X="0" Y="1" Alignment="Left"  />
+        <Widget Type="Edit"   Caption=""                X="1" Y="1" Address="0x168" Width="2"  />
+        <Widget Type="Button" Caption="Save"            X="3" Y="1" Address="0x16F" Data="0x1234" Toggle="0" Align="HCenter" />
+        <Widget Type="Label"  Caption="Press Save to store the Hardware ID in the device permanently." X="0" Y="2" Width="4" />
+    </Widget>
+</Panel>

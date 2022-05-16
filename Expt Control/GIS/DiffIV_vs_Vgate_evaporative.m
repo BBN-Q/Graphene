@@ -7,10 +7,10 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [data] = DiffIV_vs_Vbias_evaporative(GateList, InitialWaitTime, measurementWaitTime)
+function [data] = DiffIV_vs_Vgate_evaporative(GateList, InitialWaitTime, measurementWaitTime)
 pause on;
 Lockin = deviceDrivers.SRS865();
-Lockin.connect('9');
+Lockin.connect('4');
 GateSource = deviceDrivers.Keithley2400();
 GateSource.connect('23');
 

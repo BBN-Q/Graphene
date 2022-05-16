@@ -12,8 +12,10 @@ function spec = GetVNASpec_VNA()
 
 VNA = deviceDrivers.AgilentE8363C();
 %VNA.connect('16');
-VNA.connect('128.33.89.252');% New
-%VNA.connect('128.33.89.237');    % Old
+% VNA.connect('128.33.89.252');% New
+% VNA.connect('128.33.89.49');  
+VNA.connect('192.168.5.128') 
+% VNA.connect('128.33.89.237');    % Old
 if VNA.averaging == '1'
     VNA.reaverage();
 end

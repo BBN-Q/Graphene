@@ -32,12 +32,12 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT
 %%%%%%%%%%%%%%%%%%%%%     %%%%%%%%%%%%%%%%%%%%%%%%%
-RampGateVoltage(VgateList(1), 60);
+RampGateVoltage(VgateList(1), 30);
 pause on;
 pause(InitialWaitTime);
 for j=1:length(VgateList)
     %GateCtrller.value = VgateList(j);
-    RampGateVoltage(VgateList(j), 1);
+    RampGateVoltage(VgateList(j), 90);
     pause on;
     Lockin.DC = BiasList(1);
     pause(InitialWaitTime);

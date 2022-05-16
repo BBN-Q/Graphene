@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- $Id: anc350.ngc,v 1.4 2019/02/19 14:45:42 trurl Exp $ -->
+
+<Panel Name="ANC350" Icon="toright.xpm" >
+  <Widget Type="Tabs"  X="0" Y="0">
+
+    <Tab Caption="Operation"  >
+      <Macro Type="Repeater" Count="3" >
+        <Widget Type="Box"                                       X="$Counter$" Y="0" Caption="Axis $+(Counter,1)$">
+
+          <Widget Type="Box" Style="Box"                           X="0" Y="0">
+            <Widget Type="Label"  Caption="Actuator Name"            X="0" Y="0"  Alignment="Left" />
+            <Widget Type="StringEdit" Addressing="Address" LetterIndex="$Counter$" MaxLetters="20" X="1" Y="0" Width="2" ReadOnly="1" >
+              <Connect Name="Address0" Address="0x3003" Index="$Counter$" />
+              <Connect Name="Address1" Address="0x3004" Index="$Counter$" />
+              <Connect Name="Address2" Address="0x3005" Index="$Counter$" />
+              <Connect Name="Address3" Address="0x3006" Index="$Counter$" />
+              <Connect Name="Address4" Address="0x3007" Index="$Counter$" />
+            </Widget>
+            <Widget Type="Label"  Caption="LUT Name"                 X="0" Y="1" Alignment="Left" Condition="==(HwType,37120)" />
+            <Widget Type="StringEdit" Addressing="Address" LetterIndex="$Counter$" MaxLetters="20" X="1" Y="1" Width="2" ReadOnly="1" Condition="==(HwType,37120)">
+              <Connect Name="Address0" Address="0x596" Index="$Counter$" />
+              <Connect Name="Address1" Address="0x597" Index="$Counter$" />
+              <Connect Name="Address2" Address="0x598" Index="$Counter$" />
+              <Connect Name="Address3" Address="0x599" Index="$Counter$" />
+              <Connect Name="Address4" Address="0x59A" Index="$Counter$" />
+            </Widget>
+          </Widget>
+
+          <Widget Type="Box" Style="Box"                           X="0" Y="1" Caption="Position"  Condition="==(HwType,37120)" >
+            <Widget Type="Xedit"  Address="0x0415" Index="$Counter$" X="1" Y="0" Width="4" Unit="m" Prefix="u" FixPrefix="On" Scale="1000." Font="+6" Accuracy="10" ReadOnly="1" Condition="!(rotator#Counter)"/>
+            <Widget Type="Xedit"  Address="0x0415" Index="$Counter$" X="1" Y="0" Width="4" Unit="°" Prefix=" " FixPrefix="On" Scale="10000." Font="+6" Accuracy="10" ReadOnly="1" Condition="rotator#Counter"/>
+            <Widget Type="Led"    Address="0x3030" Index="$Counter$" X="5" Y="0" Grey="-1" Yellow="0" Green="1" Tip="Output active"/>
+          </Widget>
+		  
+          <Widget Type="Box" Style="Box"                           X="0" Y="1" Caption="Position"  Condition="==(HwType,37376)" >
+            <Widget Type="Label"                                     X="0" Y="0" Alignment="Left" Caption="Pos"/>
+            <Widget Type="Xedit"  Address="0x0415" Index="$Counter$" X="1" Y="0" Width="4" Unit="m" Prefix="u" FixPrefix="On" Scale="1000." Font="+6" Accuracy="10" ReadOnly="1" Condition="!(rotator#Counter)"/>
+            <Widget Type="Xedit"  Address="0x0415" Index="$Counter$" X="1" Y="0" Width="4" Unit="°" Prefix="m" FixPrefix="On"Scale="1000." Font="+6" Accuracy="10" ReadOnly="1" Condition="rotator#Counter"/>
+            <Widget Type="Led"    Address="0x3030" Index="$Counter$" X="5" Y="0" Grey="-1" Yellow="0" Green="1" Tip="Output active"/>
+            <Widget Type="Label"                                     X="0" Y="1" Alignment="Left" Caption="Ref"/>
+            <Widget Type="Xedit"  Address="0x0407" Index="$Counter$" X="1" Y="1" Width="4" Unit="m" Prefix="u" FixPrefix="On" Scale="1000." Font="+3" Accuracy="10" ReadOnly="1" Condition="!(rotator#Counter)"/>
+            <Widget Type="Xedit"  Address="0x0407" Index="$Counter$" X="1" Y="1" Width="4" Unit="°" Prefix="m" FixPrefix="On" Scale="1000." Font="+3" Accuracy="10" ReadOnly="1" Condition="rotator#Counter"/>
+            <Widget Type="Led"    Address="0x302C" Index="$Counter$" X="5" Y="1" Grey="-1" Yellow="0" Green="1" Tip="Reference valid"/>
+            <Widget Type="Button" Address="0x44F"  Index="$Counter$" X="1" Y="2" Width="4" Data="1" Toggle="0" Caption="Reset"/>
+          </Widget>
+		  
+          <Widget Type="Box" Style="Box"                           X="0" Y="1" Caption="Position"  Condition="==(HwType,37632)" >
+            <Widget Type="Label"                                     X="0" Y="0" Alignment="Left" Caption="Pos"/>
+            <Widget Type="Xedit"  Address="0x0415" Index="$Counter$" X="1" Y="0" Width="4" Unit="m" Prefix="u" FixPrefix="On" Scale="1000." Font="+6" Accuracy="10" ReadOnly="1" Condition="!(rotator#Counter)"/>
+            <Widget Type="Xedit"  Address="0x0415" Index="$Counter$" X="1" Y="0" Width="4" Unit="°" Prefix="m" FixPrefix="On"Scale="1000." Font="+6" Accuracy="10" ReadOnly="1" Condition="rotator#Counter"/>
+            <Widget Type="Led"    Address="0x3030" Index="$Counter$" X="5" Y="0" Grey="-1" Yellow="0" Green="1" Tip="Output active"/>
+            <Widget Type="Button" Address="0x44F"  Index="$Counter$" X="1" Y="2" Width="4" Data="1" Toggle="0" Caption="Reset"/>
+          </Widget>
+          
+          <Widget Type="Box" Style="Box"                           X="0" Y="2" Caption="Automatic Positioning">
+            <Widget Type="Xedit"  Address="0x0408" Index="$Counter$" X="0" Y="0" Width="2" Unit="m" Prefix="u" FixPrefix="On" Scale="1000." Persist="0" Accuracy="10" Condition="and(!(quadinactive#Counter),!(rotator#Counter))"/>
+            <Widget Type="Xedit"  Address="0x0408" Index="$Counter$" X="0" Y="0" Width="2" Unit="°" Prefix=" " FixPrefix="On" Scale="10000." Persist="0" Accuracy="10" Condition="and(!(quadinactive#Counter),rotator#Counter)"/>
+            <Widget Type="Label"                                     X="0" Y="0" Width="2" Caption="Quadrature in enabled"                             Condition="quadinactive#Counter"/>
+            <Widget Type="Led"    Address="0x3044" Index="$Counter$" X="2" Y="0" Grey="0" Yellow="1" Green="-1" Tip="Quadrature in enabled"            Condition="quadinactive#Counter"/>
+            <Widget Type="Led"    Address="0x3037" Index="$Counter$" X="2" Y="0" Grey="0" Red="-1" Green="1" Tip="Target reached"/>
+            <Widget Type="Button" Address="0x040D" Index="$Counter$" X="0" Y="1" Caption="Move Abs" Data="1" OffData="0" Toggle="1"/>
+            <Widget Type="Button" Address="0x0418" Index="$Counter$" X="1" Y="1" Caption="Move Rel" Data="1" OffData="0" Toggle="1"/>
+			<Widget Type="Button" Address="0x0444" Index="$Counter$" X="0" Y="2" Width="2" Caption="Move To Ref" Data="1" OffData="0" Toggle="1" Condition="==(HwType,37376)" />
+          </Widget> 
+          
+          <Widget Type="Box" Style="Box"                           X="0" Y="4" Caption="Manual Positioning">
+            <Widget Type="Label"                                     X="0" Y="1" Align="Left" Caption="Single Step"/>
+            <Widget Type="Button" Address="0x0411" Index="$Counter$" X="1" Y="1" Data="1" Toggle="0" Icon="arrow_left_broken.xpm"/>
+            <Widget Type="Button" Address="0x0410" Index="$Counter$" X="2" Y="1" Data="1" Toggle="0" Icon="arrow_right_broken.xpm"/>
+            <Widget Type="Label"                                     X="0" Y="2" Align="Left" Caption="Continuous"/>
+            <Widget Type="Button" Address="0x040F" Index="$Counter$" X="1" Y="2" Data="1" Toggle="2" Icon="arrow_left.xpm"/>
+            <Widget Type="Button" Address="0x040e" Index="$Counter$" X="2" Y="2" Data="1" Toggle="2" Icon="arrow_right.xpm"/>
+            <Widget Type="Label"                                     X="0" Y="3" Align="Left" Caption="Endless"/>
+            <Widget Type="Button" Address="0x040f" Index="$Counter$" X="1" Y="3" Data="1" Toggle="1" Icon="arrow_left.xpm"/>
+            <Widget Type="Button" Address="0x040e" Index="$Counter$" X="2" Y="3" Data="1" Toggle="1" Icon="arrow_right.xpm"/>
+            <Widget Type="Label"                                     X="0" Y="4" Align="VCenter" Caption="End of Travel"/>
+            <Widget Type="Led"    Address="0x3039" Index="$Counter$" X="2" Y="4" Align="Center" Grey="0" Red="1" Green="-1" Tip="EOT backward"/>
+            <Widget Type="Led"    Address="0x303A" Index="$Counter$" X="1" Y="4" Align="Center" Grey="0" Red="1" Green="-1" Tip="EOT forward"/>
+            <Widget Type="Xedit"  Address="0x0400" Index="$Counter$" X="4" Y="1" Caption="Amplitude" Unit="V"  Prefix=" " Scale="1000." Persist="0"/>
+            <Widget Type="Xedit"  Address="0x0401" Index="$Counter$" X="4" Y="2" Caption="Frequency" Unit="Hz" Prefix="X" Scale="1."    Accuracy="6" Persist="0"/>
+            <Widget Type="Xedit"  Address="0x0514" Index="$Counter$" X="4" Y="3" Caption="DC Level"  Unit="V"  Prefix="X" Scale="1000." Accuracy="6" Persist="1"/>
+            <Widget Type="Box" Style="Flat"                          X="5" Y="1" Width="1" />
+            <Widget Type="Box" Style="Flat"                          X="3" Y="1" Width="1" />
+          </Widget>
+
+          <Widget Type="Box" Style="Box"                           X="0" Y="5" Caption="Positioner Status">
+            <Widget Type="Label"                                     X="0" Y="0" Alignment="Left" Caption="Connected"/>
+            <Widget Type="Led"    Address="0x3002" Index="$Counter$" X="1" Y="0" Align="Left" Grey="-1" Yellow="0" Green="1" Tip="Axis connected"/>
+            <Widget Type="Label"                                     X="2" Y="1" Alignment="Left" Caption="Error"/>
+            <Widget Type="Led"    Address="0x3031" Index="$Counter$" X="3" Y="1" Align="Left" Grey="0" Red="1" Tip="Axis has error"/>
+            <Widget Type="Label"                                     X="0" Y="1" Alignment="Left" Caption="Output"/>
+            <Widget Type="Check"  Address="0x3030" Index="$Counter$" X="1" Y="1" Align="Left" Persist="1"/>
+            <Widget Type="Label"                                     X="2" Y="0" Alignment="Left" Caption="Moving"/>
+            <Widget Type="Led"    Address="0x302E" Index="$Counter$" X="3" Y="0" Align="Left" Grey="0" Red="-1" Green="1" Yellow="2" Tip="Axis moving"/>
+            <Widget Type="Label"                                     X="0" Y="2" Alignment="Left" Caption="Overcurrent"/>
+            <Widget Type="Led"    Address="0x3150" Index="$Counter$" X="1" Y="2" Align="Left" Grey="0" Red="1" Green="2" Tip="Overcurrent error"/>
+            <Widget Type="Button" Address="0x3151" Index="$Counter$" X="2" Y="2" Width="2" Caption="Reset" Data="1" Toggle="0" Tip="Clear overcurrent error"/>
+          </Widget>
+
+          <Widget Type="Box" Style="Box"                           X="0" Y="7" Caption="Capacitance">
+            <Widget Type="Button" Address="0x051E" Index="$Counter$" X="0" Y="0" Caption="Start" Data="1" Toggle="0" Align="VCenter"/>
+            <Widget Type="Xedit"  Address="0x0569" Index="$Counter$" X="1" Y="0" Unit="F" Prefix="n" Scale="1000." Persist="0"/>
+          </Widget>
+		  
+          <Widget Type="Box"   Caption="Special"                          X="0" Y="8"   Style="Box"  Condition="==(HwType,37376)" >
+            <Widget Type="Check"  Caption="Update Ref"                    X="0" Y="0"   Address="0x3034" Index="$Counter$" Persist="0"/>
+            <Widget Type="Check"  Caption="Auto Reset"                    X="1" Y="0"   Address="0x3035" Index="$Counter$" Persist="0"/>
+          </Widget>
+          
+        </Widget>
+      </Macro>
+    </Tab>
+    
+    <Tab Name="Settings">
+      <Macro Type="Repeater" Count="3" >
+        <Widget Type="Box"                                       X="$Counter$" Y="0" Caption="Axis $+(Counter,1)$ Actuator">
+          <Widget Type="Label"                                     X="0" Y="0" Align="Left" Caption="Type"/>
+          <Widget Type="Combo" Address="0x3014" Index="$Counter$"  X="1" Y="0" Choices="$ActorNamesRes$" Persist="0" Condition="==(HwType,37120)" />
+		  <Widget Type="Combo" Address="0x3014" Index="$Counter$"  X="1" Y="0" Choices="$ActorNamesNum$" Persist="0" Condition="==(HwType,37376)" />
+		  <Widget Type="Combo" Address="0x3014" Index="$Counter$"  X="1" Y="0" Choices="$ActorNamesFps$" Persist="0" Condition="==(HwType,37632)" />
+        </Widget>
+        
+        <Widget Type="Box"                                       X="$Counter$" Y="1" Caption="Axis $+(Counter,1)$ Lookup Table"  Condition="==(HwType,37120)" >
+          <Widget Type="ParamLoad"                                 X="0" Y="0" Width="4" Caption="Load LUT file" ParamIndex="$Counter$" lut="1">
+            <Connect Name="Address0" Address="0x596" Index="$Counter$" />
+            <Connect Name="Address1" Address="0x597" Index="$Counter$" />
+            <Connect Name="Address2" Address="0x598" Index="$Counter$" />
+            <Connect Name="Address3" Address="0x599" Index="$Counter$" />
+            <Connect Name="Address4" Address="0x59A" Index="$Counter$" />
+          </Widget>
+          <Widget Type="StringEdit"                                X="0" Y="1" Width="3" Addressing="Address" LetterIndex="$Counter$" MaxLetters="20" Caption="LUT Name" ReadOnly="1">
+            <Connect Name="Address0" Address="0x596" Index="$Counter$" />
+            <Connect Name="Address1" Address="0x597" Index="$Counter$" />
+            <Connect Name="Address2" Address="0x598" Index="$Counter$" />
+            <Connect Name="Address3" Address="0x599" Index="$Counter$" />
+            <Connect Name="Address4" Address="0x59A" Index="$Counter$" />
+          </Widget>
+          <Widget Type="Check"  Address="0x058E" Index="$Counter$" X="0" Y="2" Align="VCenter" Caption="Use LUT"/>
+        </Widget>
+        
+        <Widget Type="Box" Style="Box"                           X="$Counter$" Y="3" Caption="Axis $+(Counter,1)$ Target Range">
+          <Widget Type="Label"                                     X="0" Y="1" Caption="Target Range"/>
+          <Widget Type="Xedit"  Address="0x3036" Index="$Counter$" X="1" Y="1" Width="2" Unit="m" Prefix="u" Scale="1000." Persist="0" Accuracy="10" Condition="!(rotator#Counter)"/>
+          <Widget Type="Xedit"  Address="0x3036" Index="$Counter$" X="1" Y="1" Width="2" Unit="°" Prefix=" " Scale="10000." Persist="0" Accuracy="10" Condition="rotator#Counter"/>
+          <Widget Type="Label"                                     X="0" Y="2" Alignment="Left" Caption="Target GND"/>
+          <Widget Type="Check"  Address="0x0451" Index="$Counter$" X="1" Y="2" Persist="0"/>
+        </Widget>
+        
+        <Widget Type="Box" Style="Box"                           X="$Counter$" Y="4"   Caption="Axis $+(Counter,1)$ EOT Detection">
+          <Widget Type="Label"                                     X="0" Y="1" Width="2" Alignment="Left" Caption="Deactivate output on EOT"/>
+          <Widget Type="Check"  Address="0x0450" Index="$Counter$" X="2" Y="1"/>
+        </Widget>
+        
+        <Widget Type="Box" Style="Box"                           X="$Counter$" Y="5"  Caption="Axis $+(Counter,1)$ Trigger"    >
+          <Widget Type="Label"                                     X="0" Y="0" Align="Left" Caption="Trigger Mode"/>
+<!--      <Widget Type="Label"                                     X="0" Y="1" Align="Left" Caption="DC Incr."/> -->
+          <Widget Type="Combo"  Address="0x3042" Index="$Counter$" X="1" Y="0" Persist="0"  Choices="Disable:Quadrature:Trigger" />
+<!--      <Widget Type="Xedit"  Address="0x3049" Index="$Counter$" X="1" Y="1" Unit="V" Prefix="X" Scale="1000000." Accuracy="6" Persist="0" /> -->
+        </Widget>
+        
+        <Widget Type="Box"                                       X="$Counter$" Y="6" Caption="Axis $+(Counter,1)$ Quadrature In">
+          <Widget Type="Label"                                     X="0" Y="0" Align="Left" Caption="Enable"/>
+          <Widget Type="Label"                                     X="0" Y="1" Align="Left" Caption="Resolution"/>
+          <Widget Type="Check"  Address="0x3044" Index="$Counter$" X="1" Y="0" Persist="0"/>
+<!--          <Widget Type="Xedit"  Address="0x3045" Index="$Counter$" X="1" Y="1" Unit="m" Prefix="n" Scale="1." Min="0" Max="2000000000" Persist="0"/> -->
+          <Widget Type="Xedit"  Address="0x3045" Index="$Counter$" X="1" Y="1" Unit="m" Prefix="n" Scale="1." Persist="0" Min="0"  Max="2000000000"  Condition="!(rotator#Counter)"/>
+          <Widget Type="Xedit"  Address="0x3045" Index="$Counter$" X="1" Y="1" Unit="°" Prefix="m" Scale="10." Persist="0"   Condition="rotator#Counter"/>
+        </Widget>
+		
+        <Widget Type="Box"                                       X="$Counter$" Y="7" Caption="Axis $+(Counter,1)$ Quadrature Out">
+          <Widget Type="Label"                                     X="0" Y="0" Align="Left" Caption="Enable"/>
+          <Widget Type="Label"                                     X="0" Y="1" Align="Left" Caption="Resolution"/>
+          <Widget Type="Label"                                     X="0" Y="2" Align="Left" Caption="Clock"/>
+          <Widget Type="Check"  Address="0x3046" Index="$Counter$" X="1" Y="0" Persist="0"  />
+<!--		<Widget Type="Xedit"  Address="0x3047" Index="$Counter$" X="1" Y="1" Unit="m" Prefix="n" Scale="1."   Min="0"  Max="2000000000" Persist="0"/> -->
+          <Widget Type="Xedit"  Address="0x3047" Index="$Counter$" X="1" Y="1" Unit="m" Prefix="n" Scale="1." Persist="0" Min="0"  Max="2000000000"  Condition="!(rotator#Counter)"/>
+          <Widget Type="Xedit"  Address="0x3047" Index="$Counter$" X="1" Y="1" Unit="°" Prefix="m" Scale="10." Persist="0"   Condition="rotator#Counter"/>
+          <Widget Type="Xedit"  Address="0x3048" Index="$Counter$" X="1" Y="2" Unit="s" Prefix="n" Scale="0.05" Min="40" Max="1310700"    Persist="0"/>
+        </Widget>
+		
+		<Widget Type="Box"                                       X="$Counter$" Y="8" Caption="Axis $+(Counter,1)$ Trigger Out">
+          <Widget Type="Label"                                     X="0" Y="0" Align="Left" Caption="Position low"/>
+		  <Widget Type="Label"                                     X="0" Y="1" Align="Left" Caption="Position high"/>
+		  <Widget Type="Label"                                     X="0" Y="2" Align="Left" Caption="Polarity"/>
+		  <Widget Type="Label"                                     X="0" Y="3" Align="Left" Caption="Epsilon"/>
+<!--          <Widget Type="Xedit"  Address="0x0530" Index="$Counter$" X="1" Y="0" Unit="m" Prefix="n" Scale="1." Min="0" Max="2000000000" Persist="0"/> -->
+          <Widget Type="Xedit"  Address="0x0530" Index="$Counter$" X="1" Y="0" Unit="m" Prefix="n" Scale="1." Min="0"  Max="2000000000" Persist="0" Condition="!(rotator#Counter)"/>
+          <Widget Type="Xedit"  Address="0x0530" Index="$Counter$" X="1" Y="0" Unit="°" Prefix="m" Scale="10."    Persist="0" Condition="rotator#Counter"/>
+<!--		  <Widget Type="Xedit"  Address="0x0531" Index="$Counter$" X="1" Y="1" Unit="m" Prefix="n" Scale="1." Min="0" Max="2000000000" Persist="0"/> -->
+          <Widget Type="Xedit"  Address="0x0531" Index="$Counter$" X="1" Y="1" Unit="m" Prefix="n" Scale="1." Min="0" Max="2000000000" Persist="0" Condition="!(rotator#Counter)"/>
+          <Widget Type="Xedit"  Address="0x0531" Index="$Counter$" X="1" Y="1" Unit="°" Prefix="m" Scale="10."  Persist="0" Condition="rotator#Counter"/>
+		  <Widget Type="Combo"  Address="0x0532" Index="$Counter$" X="0" Y="2" Choices="Low=0:High" Persist="0" />
+<!--		  <Widget Type="Xedit"  Address="0x0534" Index="$Counter$" X="1" Y="3" Unit="m" Prefix="n" Scale="1." Min="0" Max="2000000000" Persist="0"/> -->
+          <Widget Type="Xedit"  Address="0x0534" Index="$Counter$" X="1" Y="3" Unit="m" Prefix="n" Scale="1." Min="0" Max="2000000000" Persist="0" Condition="!(rotator#Counter)"/>
+          <Widget Type="Xedit"  Address="0x0534" Index="$Counter$" X="1" Y="3" Unit="°" Prefix="m" Scale="10."  Persist="0" Condition="rotator#Counter"/>
+        </Widget>
+		
+      </Macro>
+      
+      <Widget Type="Box"                                       X="0" Y="9" Caption="Global" Width="1" Condition="==(HwType,37120)" >
+		<Widget Type="Box"    Style="Flat"                       X="0" Y="0"   >
+			<Widget Type="Label"                                     X="0" Y="0" Align="Left" Caption="Sensor Voltage"/>
+			<Widget Type="Xedit"  Address="0x526" Index="0"          X="1" Y="0" Unit="V" Prefix="m" Scale="1." Min="0" Max="2048" Persist="0"/>
+			<Widget Type="Label"                                     X="0" Y="1" Align="Left" Caption="Lockin" Condition="LockinAv"/>
+			<Widget Type="Check"  Address="0x5A0" Index="0"          X="1" Y="1" Persist="0"  				   Condition="LockinAv"/>
+		</Widget>
+      </Widget>
+	  
+	  
+		  <Widget Type="Box"                                       X="0" Y="9" Caption="Global" Width="1" Condition="and(==(HwType,37376),==(DutyAv,1))" >
+			<Widget Type="Label"                                   X="0" Y="0" Align="Left" Caption="Sensor Enable"/>
+			<Widget Type="Check"  Address="0x58D" Index="0"        X="1" Y="0" Persist="0"  				   />
+			<Widget Type="Label"                                   X="0" Y="1" Align="Left" Caption="Cycle Enable"/>
+			<Widget Type="Check"  Address="0x588" Index="0"        X="1" Y="1" Persist="0"  				   />
+			<Widget Type="Label"                                   X="0" Y="2" Align="Left" Caption="Cycle Period"/>
+			<Widget Type="Xedit"                   				   X="1" Y="2" Address="0x589" Index="0"  Unit="ms" Prefix="X" Scale="1." Min="0" Max="65535"     Persist="0" />
+			<Widget Type="Label"                                   X="0" Y="3" Align="Left" Caption="Off Time"/>
+			<Widget Type="Xedit"                 				   X="1" Y="3" Address="0x58A" Index="0"  Unit="ms" Prefix="X" Scale="1." Min="0" Max="65535"     Persist="0" />
+		  </Widget>
+	  
+	  
+	  
+
+      <Widget Type="Box"                                       X="1" Y="9" Caption="NSL" Width="1" >
+
+		<Widget Type="Box"    Style="Flat"                       X="1" Y="0"   >
+			<Widget Type="Label"                                     X="2" Y="0" Align="Left" Caption="NSL enable"/>
+			<Widget Type="Check"  Address="0x3158" Index="0"         X="3" Y="0" Persist="0"  				   />
+			<Widget Type="Label"                                     X="2" Y="1" Align="Left" Caption="NSL axis"/>
+			<Widget Type="Combo"  Address="0x3159" Index="0"         X="3" Y="1" Choices="Axis 1=0:Axis 2:Axis 3" Persist="0" />
+		</Widget>
+      </Widget>
+
+
+
+
+
+	  
+      
+      <Widget Type="Box" Style="Flat"                          X="0" Y="10" Align="Bottom Left">
+        <Widget Type="Button" Address="0x050C" Index="0"         X="0" Y="0" Align="VCenter" Caption="Save" Data="1" Toggle="0"/>
+        <Widget Type="Led"    Address="0x302F" Index="0"         X="1" Y="0" Align="Left" Grey="0" Red="1" Tip="Currently saving"/>
+      </Widget>               
+
+      <Widget Type="Box" Style="Flat"                          X="0" Y="11" Height="5"/>
+    </Tab>
+    
+  </Widget>
+  
+  
+</Panel>

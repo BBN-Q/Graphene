@@ -8,11 +8,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [data] = DiffIV_vs_IBias_and_VNA_vsVgate(BiasList, VgateList, InitialWaitTime, measurementWaitTime)
-StarTime = clock;
+StartTime = clock;
 FileName = strcat('Backup', '.mat');
 pause on;
-%GateCtrller = deviceDrivers.Keithley2400();
-%GateCtrller.connect('23');
+GateCtrller = deviceDrivers.Keithley2400();
+GateCtrller.connect('23');
 Lockin = deviceDrivers.SRS865();
 Lockin.connect('4');
 ACbias = Lockin.sineAmp;
@@ -33,19 +33,29 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT
 %%%%%%%%%%%%%%%%%%%%%     %%%%%%%%%%%%%%%%%%%%%%%%%
-RampGateVoltage(VgateList(1), 60);
+%RampGateVoltage(VgateList(1), 20);
 pause on;
 pause(InitialWaitTime);
 for j=1:length(VgateList)
-    %GateCtrller.value = VgateList(j);
-    RampGateVoltage(VgateList(j), 60);
+    GateCtrller.value = VgateList(j);
+    %RampGateVoltage(VgateList(j), 9);
     pause on;
     Lockin.DC = BiasList(1);
     Lockin.sineAmp = 0;
     pause(InitialWaitTime);
     disp(['Gate Voltage = ' num2str(VgateList(j)) ' V'])
     disp(['Time now is ' datestr(clock)])
+    VNA=deviceDrivers.AgilentE8363C;
+    VNA.connect('192.168.5.128');
+    VNA.output='on';
+    VNA.disconnect();
+    clear VNA
     dummy = GetVNASpec_VNA;
+    VNA=deviceDrivers.AgilentE8363C;
+    VNA.connect('192.168.5.128');
+    VNA.output='off';
+    VNA.disconnect();
+    clear VNA
     data.S(j,:) = dummy.S;
     Lockin.sineAmp = ACbias;
     for k=1:length(BiasList)

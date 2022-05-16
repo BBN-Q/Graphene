@@ -29,13 +29,13 @@ function plot_data()
     figure(799); clf; plot(VgateList(1:k), data.X, '.-'); grid on;
 %     hold on; plot(VgateList(1:k), data.X2, '.-'); 
 %     legend('X1', 'X2');
-    xlabel('V_{bias} (V)'); ylabel('Lockin X (V)');
+    xlabel('V_{gate} (V)'); ylabel('Lockin X (V)');
 %     figure(789); clf; plot(VgateList(1:k), data.IX); grid on;
 %     xlabel('V_{bias} (V)'); ylabel('Lockin Current (A)');
 %     figure(779); clf; plot(VgateList(1:k), data.X./data.IX); grid on;
 %     xlabel('V_{bias} (V)'); ylabel('Resistance (\Omega)');
     figure(899); clf; plot(VgateList(1:k), 1E9*data.LeakCurrent, '.-'); grid on;
-    xlabel('V_{bias} (V)'); ylabel('LeakCurrent (nA)');
+    xlabel('V_{gate} (V)'); ylabel('LeakCurrent (nA)');
 end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -46,7 +46,7 @@ for k=1:length(VgateList)
     pause(measurementWaitTime);
     data.X(k) = Lockin.X; data.Y(k) = Lockin.Y;
 %     data.X2(k) = Lockin2.X; data.Y2(k) = Lockin2.Y;
-    data.IX(k) = LockinCurrent.X; data.IY(k) = LockinCurrent.Y;
+%    data.IX(k) = LockinCurrent.X; data.IY(k) = LockinCurrent.Y;
     data.LeakCurrent(k) = GateController.value;
     plot_data()
 end

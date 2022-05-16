@@ -1,0 +1,78 @@
+ANC350 V4 Software Release Notes
+================================
+
+1.2.0
+-----
+- Firmware update (nhflash.exe) over Ethernet possible
+
+1.1.19
+------
+- DLL: New function ANC_getDcVoltage
+
+1.1.18
+------
+- DLL: Accelerated ANC_getAxisStatus
+- DLL: New function ANC_getLutName
+
+1.1.17
+------
+- Absolute und relative positioning for /fps fixed
+
+1.1.16
+------
+- Touch display calibration improved
+
+1.1.15
+------
+- Daisy now displays firmware version warnings
+- New actuators ANPextended+*HLoad and ANPextended-*HLoad for high load driven actuators
+
+1.1.14
+------
+- Additional function in userlib: ANC_setTargetGround
+- Parameter Target Range and Target GND savable
+
+1.1.13
+------
+- ANC350 RES position display for negative positions fixed
+
+1.1.12
+------
+- 1kHz Position Update via DLL for res-option fixed
+
+1.1.11
+------
+- 1kHz Position Update via DLL
+
+1.1.10
+------
+- Bugfix userlib: Conflict when controlling ECC and ANC devices in one program
+
+1.1.9
+-----
+- Bugfixes for extended APS Files for resistive sensors
+
+1.1.8
+-----
+- Extended userlib: upload of Res sensor lookup tables
+- Extended APS Support
+
+1.1.7
+-----
+- New motor presets for resistive sensors
+
+1.1.6
+-----
+- Lockin feature always available
+
+1.1.5
+-----
+- Support for ANC350Fps
+
+1.1.4
+-----
+- Improved automatic positioning controller
+
+1.1.3
+-----
+- First public version

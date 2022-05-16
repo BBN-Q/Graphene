@@ -10,6 +10,8 @@
 function [data] = VNA_vs_Vgate(VgateList, InitialWaitTime, measurementWaitTime)
 pause on;
 clear data Lockin
+GateCtrller = deviceDrivers.Keithley2400();
+GateCtrller.connect('23');
 %Lockin = deviceDrivers.SRS865();
 %Lockin.connect('4');
 
@@ -21,12 +23,13 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%     RUN THE EXPERIMENT      %%%%%%%%%%%%%%%%%%%%%%%%%
 %data.S = zeros(length(VgateList),2048);
-RampGateVoltage(VgateList(1), 10*InitialWaitTime)
+%RampGateVoltage(VgateList(1), 10*InitialWaitTime)
 pause(InitialWaitTime);
 for k = 1:length(VgateList)
     if k ~= 1
+        GateCtrller.value = VgateList(k);
         %RampGateVoltage(VgateList(k),10*measurementWaitTime);
-        RampGateVoltage(VgateList(k),60)
+        %RampGateVoltage(VgateList(k),5)
     end
     pause(measurementWaitTime);
     result = GetVNASpec_VNA();

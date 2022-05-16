@@ -45,7 +45,7 @@ FileName = strcat('Cool4Tc_', datestr(StartTime, 'yyyymmdd_HHMMSS'), '.mat');
 j=1;
 pause on;
 figure(234);
-while j < 3600
+while j < 3600/3*8
     CoolLogData.time(j) = etime(clock, StartTime);
     %CoolLogData.T(j) = TController.get_temperature('A');
     CoolLogData.T(j) = TController.get_temperature(6);

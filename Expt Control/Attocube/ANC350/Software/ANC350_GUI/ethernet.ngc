@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- $Id: ethernet.ngc,v 1.2 2015/07/16 17:29:22 trurl Exp $ -->
+<Panel Name="Ethernet Settings" Icon="connect.xpm" >
+
+  <Widget Type="Box" Style="Flat"              X="0" Y="0" Align="Top Left" >
+    <Widget Type="Edit"   Caption="IP Address"     Address="0x186" Index="0" Display="IpAddr" X="0" Y="0" Persist="0" />
+    <Widget Type="Edit"   Caption="Subnet Mask"    Address="0x187" Index="0" Display="IpAddr" X="0" Y="1" Persist="0" />
+    <Widget Type="Edit"   Caption="Gateway"        Address="0x188" Index="0" Display="IpAddr" X="0" Y="2" Persist="0" />
+    <Widget Type="Label"  Caption="   "                                                             X="0" Y="3" />
+    <Widget Type="Button" Caption="Save"           Address="0x18B" Index="0" Data="1"         X="0" Y="4" Toggle="0"  />
+    <Widget Type="Edit"   Caption="MAC High Word"  Address="0x18A" Index="0" Display="Hex"    X="2" Y="0" Persist="0" ReadOnly="1" />
+    <Widget Type="Edit"   Caption="MAC Low  Word"  Address="0x189" Index="0" Display="Hex"    X="2" Y="1" Persist="0" ReadOnly="1" />
+  </Widget>
+        
+</Panel>

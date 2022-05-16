@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- N-Hands Product Spec for ANC350V4 -->
+<!-- $Id: anc350.nps,v 1.8 2019/02/19 14:45:42 trurl Exp $ -->
+<Productspec Code="0x01" Caption="ANC350">
+
+  <!-- Controller Properties -->
+  <Controller DataChannels="3" Interfaces="Usb Tcp" FlashIfc="Usb Tcp">
+    <Variant Code="0x9100" Caption="ANC350Res">
+      <File Target="Core FPGA" Name="anc3res_core.bit" AddrFlash="0x176" AddrVer="0x117" AddrPrd="0x118"/>
+      <File Target="Appl FPGA" Name="anc3res_appl.bit" AddrFlash="0x172" AddrVer="0x119" AddrPrd="0x11A"/>
+      <File Target="DSP"       Name="anc3res_dsp.ldr"  AddrFlash="0x171" AddrVer="0x111" AddrPrd="0x112"/>
+      <File Target="SAM"       Name="anc3res_sam.bin"  AddrFlash="0x17C" AddrVer="-1"    AddrPrd="-1"   />
+    </Variant>
+    <Variant Code="0x9200" Caption="ANC350Num">
+      <File Target="Core FPGA" Name="anc3num_core.bit" AddrFlash="0x176" AddrVer="0x117" AddrPrd="0x118"/>
+      <File Target="Appl FPGA" Name="anc3num_appl.bit" AddrFlash="0x172" AddrVer="0x119" AddrPrd="0x11A"/>
+      <File Target="DSP"       Name="anc3num_dsp.ldr"  AddrFlash="0x171" AddrVer="0x111" AddrPrd="0x112"/>
+      <File Target="SAM"       Name="anc3num_sam.bin"  AddrFlash="0x17C" AddrVer="-1"    AddrPrd="-1"   />
+    </Variant>
+    <Variant Code="0x9300" Caption="ANC350Fps">
+      <File Target="Core FPGA" Name="anc3fps_core.bit" AddrFlash="0x176" AddrVer="0x117" AddrPrd="0x118"/>
+      <File Target="Appl FPGA" Name="anc3fps_appl.bit" AddrFlash="0x172" AddrVer="0x119" AddrPrd="0x11A"/>
+      <File Target="DSP"       Name="anc3fps_dsp.ldr"  AddrFlash="0x171" AddrVer="0x111" AddrPrd="0x112"/>
+      <File Target="SAM"       Name="anc3fps_sam.bin"  AddrFlash="0x17C" AddrVer="-1"    AddrPrd="-1"   />
+    </Variant>
+  </Controller>
+
+  <!-- Server & Booting -->
+  <Server Name="daisysrv" Port="7420"/>
+
+  <!-- Data Channels & Groups -->
+   <Data>
+    <Signals>
+      <Signal  Id="0"  Name="Soft VAD"        Type="1"/>
+      <Signal  Id="1"  Name="Counter"         Type="1"/>
+      <Signal  Id="2"  Name="Pos 1"           Type="1"/>
+      <Signal  Id="3"  Name="Pos 2"           Type="1"/>
+      <Signal  Id="4"  Name="Pos 3"           Type="1"/>
+      <Signal  Id="5"  Name="Ref 1"           Type="1"/>
+      <Signal  Id="6"  Name="Ref 2"           Type="1"/>
+      <Signal  Id="7"  Name="Ref 3"           Type="1"/>
+    </Signals>
+    <Triggers>
+      <Trigger Id="0"  Name="Disabled"        Type="0"/>
+      <Trigger Id="2"  Name="Time"            Type="2"/>
+    </Triggers>
+    <Groups>
+      <Group Id="0"  Name="Disabled" Abbrev="DIS" Trigger="0"  ChannelDescr="Name"  Formats=""
+             Properties="HidePage"                          />
+      <Group Id="7"  Name="Time"     Abbrev="LN"  Trigger="2"  ChannelDescr="Name"  Formats=""
+             Properties="StoreContinous StoreLocal StoreRetrigger ShowSource ShowAverage ShowSampleTime ShowStream"/>
+    </Groups>
+  </Data>
+
+  <!-- GUI settings -->
+  <GuiSettings MultiDevice="1" AutoLoad="anc350.ngp"
+               ProgramName="Daisy/350"/>
+  
+
+  <!-- String Constants -->
+  <Strings>
+    <String Name="ActorNamesRes" Text="ANPx51:ANPz51:ANPz51ext:ANPx101:ANPz101:ANPz102:ANPz101ext:ANPz111(ext):ANPx111(ext):ANPx121:ANPx311:ANPx321:ANPx341:ANGt101:ANGp101:ANR(v)101:ANR(v)5*:ANR(v)200/240:ANR(v)220:Test" />
+	<String Name="ActorNamesNum" Text="ANGp101num:ANGt101num:ANPx51num:ANPx101num:ANPx112num:ANPx121num:ANPx122num:ANPx320num:ANP340num:ANPz101num:ANPz111num:ANR101num:ECS3030:ECS3050:ECS3080:Test" />
+	<String Name="ActorNamesFps" Text="ANP+*:ANP-*:ANPextended+*:ANPextended-*:ANS+*:ANS-*:ANPextended+*HLoad:ANPextended-*HLoad"/>
+    <String Name="ActorTypes" Text="Linear:Rotator:Goniometer" />
+    <String Name="ActorTypeUnits" Text="µm:°:°" />
+	<String Name="ProductNames"  Text="ANC3res=37120:ANC3num=37376:ANC3fps=37632" />
+  </Strings>
+  
+  <Conditions>
+    <Condition Name="HwType"   		Address="0x167"  Index="0" Default="0"/>
+	<Condition Name="LockinAv" 		Address="0x3058" Index="0" Default="0"/>
+	<Condition Name="DutyAv" 		Address="0x315D" Index="0" Default="0"/>
+    <Condition Name="quadinactive0" Address="0x3044" Index="0" Default="0"/>
+    <Condition Name="quadinactive1" Address="0x3044" Index="1" Default="0"/>
+    <Condition Name="quadinactive2" Address="0x3044" Index="2" Default="0"/>
+    <Condition Name="rotator0"      Address="0x3033" Index="0" Default="0"/>
+    <Condition Name="rotator1"      Address="0x3033" Index="1" Default="0"/>
+    <Condition Name="rotator2"      Address="0x3033" Index="2" Default="0"/>
+  </Conditions>
+
+  
+
+
+
+</Productspec>

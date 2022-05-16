@@ -1,0 +1,40 @@
+<Panel Name="Actuator Presets" Icon="debug.xpm" >
+	<Widget Type="Box" Style="Flat"                        						X="0" Y="0"  Condition="==(HwType,37120)">
+		<Widget Type="Box" Caption="Version information"                        X="0" Y="0" >
+			<Widget Type="Label" Caption="Version flashed"						X="0" Y="0" Address="0x3050" Display="Decimal" />
+			<Widget Type="Label" Caption="Version loaded"						X="1" Y="0" Address="0x3051" Display="Decimal" />
+			<Widget Type="Label" Caption=""								        X="2" Y="0" Width="10" />
+		</Widget>
+		<Widget Type="Box" Style="Flat"											X="0" Y="1"  >
+			<Widget Type="Label" Caption="Actuator #"								X="0" Y="0" />
+			<Widget Type="Label" Caption="Actuator Name"							X="1" Y="0" Width="3"/>
+			<Macro Type="Repeater" Count="20" >		
+				<Widget Type="Label" Caption="$Counter$"							X="0" Y="$+(Counter,1)$" />
+				<Widget Type="StringEdit" Addressing="Address" LetterIndex="$Counter$" MaxLetters="20"		X="1" Y="$+(Counter,1)$" ReadOnly="1"  Width="3" >
+					<Connect Name="Address0" Address="0x3015" Index="$Counter$" />
+					<Connect Name="Address1" Address="0x3016" Index="$Counter$"/>
+					<Connect Name="Address2" Address="0x3017" Index="$Counter$"/>
+					<Connect Name="Address3" Address="0x3018" Index="$Counter$"/>
+					<Connect Name="Address4" Address="0x3019" Index="$Counter$"/>
+				</Widget>
+			</Macro>
+		</Widget>
+		
+		<Widget Type="Box" Style="Flat"											X="0" Y="2"  >
+			<Widget Type="Button" Caption="Save"								X="0" Y="0" Address="0x3029" Index="0" Data="1" Toggle="0" Align="VCenter" />
+			<Widget Type="Led"    Caption=""                                    X="1" Y="0" Address="0x302F" Index="0"  Grey="0" Red="1"   Align="Left"/>
+			<Widget Type="Box" Style="Flat"										X="2" Y="0" Width="10" />
+		</Widget>	
+	</Widget>	
+	
+	
+	<Widget Type="Box" Style="Flat"                        						X="0" Y="0"  Condition="!=(HwType,37120)">
+		<Widget Type="Label" Caption="Warning!"												X="0" Y="0" Font="+6" Align="Left" />
+		<Widget Type="Label" Caption="Wrong actuator presets for loaded."					X="0" Y="1" Align="Left" />
+		<Widget Type="Label" Caption="Please load correct presets for connected product:"	X="0" Y="2" Align="Left" />
+		<Widget Type="Label" Caption="$ProductNames$"										X="0" Y="4" Font="+3" Display="Enum" Address="0x167" Align="Left" />
+	</Widget>
+	
+	<Widget Type="Box" Style="Flat"                        						X="1" Y="0"  Width="10" />
+	<Widget Type="Box" Style="Flat"                        						X="0" Y="1"  Height="10" />
+</Panel>
